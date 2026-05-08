@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JoNetflix - Miniseries</title>
+    <link rel="stylesheet" href="jonetflix-styles.css">
+</head>
+<body>
+    <header class="header">
+        <div class="logo"><span class="big">J</span>o<span class="big">N</span>etflix</div>
+        <button class="nav-btn active" id="btnPendientes" onclick="showSection('pendientes')">📺 Pendientes</button>
+        <button class="nav-btn" id="btnVistas" onclick="showSection('vistas')">✅ Vistas</button>
+        <button class="nav-btn" id="btnTodas" onclick="showSection('todas')">📋 Todas</button>
+        <div class="stats" id="stats"></div>
+    </header>
+
+    <main>
+        <div class="detail-panel" id="detailPanel">
+            <button class="close-btn" onclick="closeDetail()">×</button>
+            <img class="detail-poster" id="detailPoster" src="" alt="">
+            <div class="detail-info">
+                <h1 class="detail-title" id="detailTitle"></h1>
+                <div class="detail-meta" id="detailMeta"></div>
+                <p class="detail-synopsis" id="detailSynopsis"></p>
+                <div class="detail-cast" id="detailCast"></div>
+                <div class="detail-genres" id="detailGenres"></div>
+                <div class="detail-actions">
+                    <a class="netflix-btn" id="netflixBtn" href="#" target="_blank">▶ Ver en Netflix</a>
+                    <button class="mark-viewed-btn" id="markViewedBtn" onclick="toggleViewed()">✓ Marcar como vista</button>
+                </div>
+            </div>
+        </div>
+        <div id="content"><div class="loading">Cargando catálogo...</div></div>
+    </main>
+
+    <script src="data.js"></script>
+    <script>
+        let allSeries = [];
+        let currentSection = 'pendientes';
+        let selectedSeries = null;
+        let viewedSeries = JSON.parse(localStorage.getItem('viewedSeries') || '[]');
+
+        // Orden de categorías para mostrar
+        const CATEGORY_ORDER = [
+            'Thriller', 'Drama', 'True Crime', 'Documental', 
+            'Romance', 'Histórico', 'Nórdico', 'Judicial', 
+            'Biográfico', 'Acción', 'Fantasía', 'Comedia', 'Otros'
+        ];
+
+        function loadSeries() {
+            if (typeof SERIES_DATA !== 'undefined') {
+                allSeries = SERIES_DATA.series;
+                console.log('Miniseries cargadas:', SERIES_DATA.lastUpdate, '- Total:', allSeries.length);
+            } else {
+                console.log('Error: SERIES_DATA no disponible');
+                document.getElementById('content').innerHTML = '<div class="empty-msg">Error al cargar el catálogo</div>';
+                return;
+            }
+            
+            // Sincronizar vistas del JSON con localStorage
+            allSeries.forEach(s => {
+                if (s.viewed && !viewedSeries.includes(s.id)) {
+                    viewedSeries.push(s.id);
+                }
+            });
+            localStorage.setItem('viewedSeries', JSON.stringify(viewedSeries));
+            
+            updateStats();
+            renderContent();
+        }
+
+        function updateStats() {
+            const notViewed = allSeries.filter(s => !viewedSeries.includes(s.id) && !s.genres?.includes('Skipped')).length;
+            const viewed = allSeries.filter(s => viewedSeries.includes(s.id)).length;
+            document.getElementById('stats').innerHTML = 
+                `📊 <span>${notViewed}</span> pendientes · <span>${viewed}</span> vistas`;
+        }
+
+        function showSection(section) {
+            currentSection = section;
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('btn' + section.charAt(0).toUpperCase() + section.slice(1)).classList.add('active');
+            closeDetail();
+            renderContent();
+        }
+
+        function getMainGenre(genres) {
+            if (!genres || genres.length === 0) return 'Otros';
+            // Filtrar "Skipped" que es un estado, no género
+            const realGenres = genres.filter(g => g !== 'Skipped');
+            if (realGenres.length === 0) return 'Otros';
+            return realGenres[0];
+        }
+
+        function groupByCategory(series) {
+            const categories = {};
+            series.forEach(s => {
+                const genre = getMainGenre(s.genres);
+                if (!categories[genre]) categories[genre] = [];
+                categories[genre].push(s);
+            });
+            return categories;
+        }
+
+        function renderContent() {
+            let seriesToShow = [];
+            
+            if (currentSection === 'pendientes') {
+                seriesToShow = allSeries.filter(s => !viewedSeries.includes(s.id) && !s.genres?.includes('Skipped'));
+            } else if (currentSection === 'vistas') {
+                seriesToShow = allSeries.filter(s => viewedSeries.includes(s.id) || s.genres?.includes('Skipped'));
+            } else {
+                seriesToShow = allSeries;
+            }
+
+            if (seriesToShow.length === 0) {
+                document.getElementById('content').innerHTML = `<div class="empty-msg">No hay series en esta sección</div>`;
+                return;
+            }
+
+            // Agrupar por categorías
+            const categories = groupByCategory(seriesToShow);
+            
+            // Ordenar categorías según el orden definido
+            let html = '';
+            CATEGORY_ORDER.forEach(cat => {
+                if (categories[cat] && categories[cat].length > 0) {
+                    html += renderCategory(cat, categories[cat]);
+                }
+            });
+            
+            // Categorías que no están en el orden
+            Object.keys(categories).forEach(cat => {
+                if (!CATEGORY_ORDER.includes(cat) && categories[cat].length > 0) {
+                    html += renderCategory(cat, categories[cat]);
+                }
+            });
+
+            document.getElementById('content').innerHTML = html;
+        }
+
+        function renderCategory(name, series) {
+            let html = `<div class="category"><h2 class="category-title">${name} (${series.length})</h2><div class="cards-grid">`;
+            
+            series.forEach(s => {
+                const isViewed = viewedSeries.includes(s.id);
+                const isSkipped = s.genres?.includes('Skipped');
+                const poster = s.poster || 'https://via.placeholder.com/300x450/1a1a1a/666?text=' + encodeURIComponent(s.title);
+                
+                html += `
+                    <div class="card" onclick="showDetail('${s.id}')">
+                        ${isViewed && !isSkipped ? '<span class="card-badge">✓</span>' : ''}
+                        ${isSkipped ? '<span class="card-badge skipped">SKIP</span>' : ''}
+                        <img src="${poster}" alt="${s.title}" onerror="this.src='https://via.placeholder.com/300x450/1a1a1a/666?text=${encodeURIComponent(s.title)}'">
+                        <div class="card-title">${s.title}</div>
+                    </div>
+                `;
+            });
+            
+            html += '</div></div>';
+            return html;
+        }
+
+        function showDetail(id) {
+            const series = allSeries.find(s => s.id === id);
+            if (!series) return;
+            
+            selectedSeries = series;
+            const isViewed = viewedSeries.includes(series.id);
+            
+            document.getElementById('detailTitle').textContent = series.title;
+            document.getElementById('detailMeta').textContent = `${series.year} · ${series.episodes} episodios · ${series.duration || ''}`;
+            document.getElementById('detailSynopsis').textContent = series.synopsis || 'Sin sinopsis disponible.';
+            
+            const cast = series.cast || [];
+            document.getElementById('detailCast').textContent = cast.length > 0 ? 'Reparto: ' + cast.join(', ') : '';
+            
+            const genres = series.genres || [];
+            document.getElementById('detailGenres').innerHTML = genres.map(g => 
+                `<span class="genre-tag">${g}</span>`
+            ).join('');
+            
+            const poster = series.poster || 'https://via.placeholder.com/280x420/1a1a1a/666?text=' + encodeURIComponent(series.title);
+            document.getElementById('detailPoster').src = poster;
+            
+            const btn = document.getElementById('markViewedBtn');
+            if (isViewed) {
+                btn.textContent = '✗ Desmarcar como vista';
+                btn.classList.add('viewed');
+            } else {
+                btn.textContent = '✓ Marcar como vista';
+                btn.classList.remove('viewed');
+            }
+            
+            const netflixUrl = series.netflixUrl || '#';
+            document.getElementById('netflixBtn').href = netflixUrl;
+            document.getElementById('netflixBtn').style.display = netflixUrl !== '#' ? 'inline-block' : 'none';
+            
+            document.getElementById('detailPanel').classList.add('active');
+        }
+
+        function closeDetail() {
+            document.getElementById('detailPanel').classList.remove('active');
+            selectedSeries = null;
+        }
+
+        function toggleViewed() {
+            if (!selectedSeries) return;
+            
+            const id = selectedSeries.id;
+            const idx = viewedSeries.indexOf(id);
+            
+            if (idx >= 0) {
+                viewedSeries.splice(idx, 1);
+            } else {
+                viewedSeries.push(id);
+            }
+            
+            localStorage.setItem('viewedSeries', JSON.stringify(viewedSeries));
+            updateStats();
+            renderContent();
+            showDetail(id);
+        }
+
+        // Cerrar panel con Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeDetail();
+        });
+
+        // Iniciar
+        loadSeries();
+    </script>
+</body>
+</html>
