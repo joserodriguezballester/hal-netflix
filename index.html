@@ -5,215 +5,327 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JoNetflix - Miniseries</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; 
-            background-color: #141414; 
-            color: #fff; 
-            min-height: 100vh; 
-        }
-        @media (max-width: 500px) { 
-            .header { padding: 10px 15px; gap: 8px; }
-            .logo { font-size: 20px; }
-            .logo .big { font-size: 26px; }
-            .nav-btn { font-size: 12px; padding: 6px 10px; }
-            .stats { font-size: 11px; padding: 6px 10px; }
-        }
-        .header { 
-            position: fixed; 
-            top: 0; 
-            left: 0; 
-            right: 0; 
-            padding: 15px 30px; 
-            background: linear-gradient(180deg, rgba(20,20,20,0.98) 0%, rgba(20,20,20,0) 100%); 
-            z-index: 1000; 
-            display: flex; 
-            align-items: center; 
-            gap: 20px; 
-        }
-        .logo { color: #e50914; font-size: 28px; font-weight: bold; letter-spacing: 2px; }
-        .logo .big { font-size: 36px; }
-        .nav-btn { 
-            background: transparent; 
-            border: none; 
-            color: #fff; 
-            font-size: 16px; 
-            cursor: pointer; 
-            padding: 8px 16px; 
-            border-radius: 4px;
-            transition: all 0.2s;
-        }
-        .nav-btn:hover { background: rgba(255,255,255,0.1); }
-        .nav-btn.active { border-bottom: 3px solid #e50914; }
-        .stats { 
-            margin-left: auto; 
-            background: rgba(255,255,255,0.1); 
-            padding: 8px 16px; 
-            border-radius: 4px; 
-            font-size: 14px; 
-            color: #aaa;
-        }
-        .stats span { color: #e50914; font-weight: bold; }
-        @media (max-width: 500px) { main { padding: 65px 10px 15px 10px; } }
-        main { padding: 80px 30px 30px 30px; max-width: 1600px; margin: 0 auto; }
-        
-        .detail-panel { 
-            position: fixed; 
-            top: 70px; 
-            left: 50%; 
-            transform: translateX(-50%); 
-            width: 90%; 
-            max-width: 1200px; 
-            background: #181818; 
-            border-radius: 8px; 
-            padding: 30px; 
-            display: none; 
-            z-index: 100; 
-            box-shadow: 0 8px 32px rgba(0,0,0,0.9); 
-            max-height: 85vh; 
-            overflow-y: auto; 
-        }
-        .detail-panel.active { 
-            display: flex; 
-            gap: 30px; 
-            animation: fadeIn 0.3s ease; 
-        }
-        @keyframes fadeIn { 
-            from { opacity: 0; transform: translateX(-50%) translateY(-20px); } 
-            to { opacity: 1; transform: translateX(-50%) translateY(0); } 
-        }
-        .detail-poster { 
-            width: 280px; 
-            height: 420px; 
-            object-fit: cover; 
-            border-radius: 8px; 
-            flex-shrink: 0; 
-            background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%); 
-        }
-        .detail-info { flex: 1; }
-        .detail-title { font-size: 36px; font-weight: bold; margin-bottom: 12px; }
-        .detail-meta { color: #999; margin-bottom: 20px; font-size: 15px; }
-        .detail-synopsis { line-height: 1.7; margin-bottom: 20px; font-size: 15px; }
-        .detail-cast { color: #aaa; font-size: 14px; margin-bottom: 20px; }
-        .detail-genres { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 25px; }
-        .genre-tag { 
-            background: rgba(229,9,14,0.2); 
-            border: 1px solid rgba(229,9,14,0.5); 
-            padding: 6px 14px; 
-            border-radius: 4px; 
-            font-size: 13px; 
-        }
-        .detail-actions { display: flex; gap: 15px; flex-wrap: wrap; }
-        .netflix-btn { 
-            background: #e50914; 
-            color: #fff; 
-            border: none; 
-            padding: 14px 28px; 
-            font-size: 16px; 
-            border-radius: 4px; 
-            cursor: pointer; 
-            transition: all 0.2s; 
-            font-weight: bold; 
-            text-decoration: none;
-            display: inline-block;
-        }
-        .netflix-btn:hover { background: #f40612; transform: scale(1.02); }
-        .mark-viewed-btn {
-            background: transparent;
-            border: 2px solid #46d369;
-            color: #46d369;
-            padding: 12px 24px;
-            font-size: 14px;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-weight: bold;
-        }
-        .mark-viewed-btn:hover { background: #46d369; color: #141414; }
-        .mark-viewed-btn.viewed { border-color: #666; color: #666; }
-        .mark-viewed-btn.viewed:hover { background: #333; color: #999; }
-        
-        .category { margin-bottom: 50px; }
-        .category-title { 
-            font-size: 26px; 
-            margin-bottom: 20px; 
-            padding-left: 15px; 
-            border-left: 4px solid #e50914; 
-        }
-        .cards-grid { 
-            display: grid; 
-            grid-template-columns: repeat(5, 1fr); 
-            gap: 20px; 
-        }
-        @media (max-width: 1400px) { .cards-grid { grid-template-columns: repeat(4, 1fr); } }
-        @media (max-width: 1100px) { .cards-grid { grid-template-columns: repeat(3, 1fr); } }
-        @media (max-width: 800px) { .cards-grid { grid-template-columns: repeat(2, 1fr); } }
-        @media (max-width: 500px) { .cards-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; } }
-        
-        @media (max-width: 500px) { 
-            .card { margin: 0; }
-            .card img { height: 180px; }
-            .card-title { font-size: 11px; padding: 8px; }
-        }
-        .card { 
-            cursor: pointer; 
-            transition: all 0.3s ease; 
-            border-radius: 8px; 
-            overflow: hidden; 
-            position: relative; 
-            background: #181818; 
-        }
-        .card:hover { transform: scale(1.08); box-shadow: 0 8px 25px rgba(229,9,14,0.5); z-index: 10; }
-        .card.selected { box-shadow: 0 0 0 4px #e50914; transform: scale(1.05); }
-        .card-poster { 
-            width: 100%; 
-            aspect-ratio: 2/3; 
-            object-fit: cover; 
-            display: block; 
-            background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%); 
-        }
-        .card-info { padding: 15px; background: #181818; }
-        .card-title { 
-            font-size: 15px; 
-            font-weight: bold; 
-            margin-bottom: 6px; 
-            display: -webkit-box; 
-            -webkit-line-clamp: 2; 
-            -webkit-box-orient: vertical; 
-            overflow: hidden; 
-            line-height: 1.3; 
-        }
-        .card-meta { font-size: 13px; color: #888; }
-        .card-viewed { 
-            position: absolute; 
-            top: 10px; 
-            left: 10px; 
-            background: #46d369; 
-            color: #141414; 
-            padding: 4px 10px; 
-            border-radius: 4px; 
-            font-size: 11px; 
-            font-weight: bold; 
-        }
-        
-        .close-btn { 
-            position: absolute; 
-            top: 20px; 
-            right: 20px; 
-            background: rgba(0,0,0,0.7); 
-            border: none; 
-            color: #fff; 
-            width: 40px; 
-            height: 40px; 
-            border-radius: 50%; 
-            cursor: pointer; 
-            font-size: 28px; 
-            line-height: 1; 
-            transition: all 0.2s; 
-        }
-        .close-btn:hover { background: #e50914; transform: rotate(90deg); }
-        .empty-msg { text-align: center; padding: 40px; color: #666; font-size: 18px; }
-        .loading { text-align: center; padding: 40px; color: #888; font-size: 18px; }
+/* JoNetflix - Estilos principales */
+/* Extraído de catalogo.html - 2026-05-08 */
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body { 
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; 
+    background-color: #141414; 
+    color: #fff; 
+    min-height: 100vh; 
+}
+
+/* === HEADER === */
+.header { 
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    right: 0; 
+    padding: 15px 30px; 
+    background: linear-gradient(180deg, rgba(20,20,20,0.98) 0%, rgba(20,20,20,0) 100%); 
+    z-index: 1000; 
+    display: flex; 
+    align-items: center; 
+    gap: 20px; 
+}
+
+.logo { color: #e50914; font-size: 28px; font-weight: bold; letter-spacing: 2px; }
+.logo .big { font-size: 36px; }
+
+.nav-btn { 
+    background: transparent; 
+    border: none; 
+    color: #fff; 
+    font-size: 16px; 
+    cursor: pointer; 
+    padding: 8px 16px; 
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+.nav-btn:hover { background: rgba(255,255,255,0.1); }
+.nav-btn.active { border-bottom: 3px solid #e50914; }
+
+.stats { 
+    margin-left: auto; 
+    background: rgba(255,255,255,0.1); 
+    padding: 8px 16px; 
+    border-radius: 4px; 
+    font-size: 14px; 
+    color: #aaa;
+}
+.stats span { color: #e50914; font-weight: bold; }
+
+main { padding: 80px 30px 30px 30px; max-width: 1600px; margin: 0 auto; }
+
+/* === DETAIL PANEL === */
+.detail-panel { 
+    position: fixed; 
+    top: 70px; 
+    left: 50%; 
+    transform: translateX(-50%); 
+    width: 90%; 
+    max-width: 1200px; 
+    background: #181818; 
+    border-radius: 8px; 
+    padding: 30px; 
+    display: none; 
+    z-index: 100; 
+    box-shadow: 0 8px 32px rgba(0,0,0,0.9); 
+    max-height: 85vh; 
+    overflow-y: auto; 
+}
+
+.detail-panel.active { 
+    display: flex; 
+    gap: 30px; 
+    animation: fadeIn 0.3s ease; 
+}
+
+@keyframes fadeIn { 
+    from { opacity: 0; transform: translateX(-50%) translateY(-20px); } 
+    to { opacity: 1; transform: translateX(-50%) translateY(0); } 
+}
+
+.detail-poster { 
+    width: 280px; 
+    height: 420px; 
+    object-fit: cover; 
+    border-radius: 8px; 
+    flex-shrink: 0; 
+    background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%); 
+}
+
+.detail-info { flex: 1; }
+.detail-title { font-size: 36px; font-weight: bold; margin-bottom: 12px; }
+.detail-meta { color: #999; margin-bottom: 20px; font-size: 15px; }
+.detail-synopsis { line-height: 1.7; margin-bottom: 20px; font-size: 15px; }
+.detail-cast { color: #aaa; font-size: 14px; margin-bottom: 20px; }
+.detail-genres { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 25px; }
+
+.genre-tag { 
+    background: rgba(229,9,14,0.2); 
+    border: 1px solid rgba(229,9,14,0.5); 
+    padding: 6px 14px; 
+    border-radius: 4px; 
+    font-size: 13px; 
+}
+
+.detail-actions { display: flex; gap: 15px; flex-wrap: wrap; }
+
+.netflix-btn { 
+    background: #e50914; 
+    color: #fff; 
+    border: none; 
+    padding: 14px 28px; 
+    font-size: 16px; 
+    border-radius: 4px; 
+    cursor: pointer; 
+    transition: all 0.2s; 
+    font-weight: bold; 
+    text-decoration: none;
+    display: inline-block;
+}
+.netflix-btn:hover { background: #f40612; transform: scale(1.02); }
+
+.mark-viewed-btn {
+    background: transparent;
+    border: 2px solid #46d369;
+    color: #46d369;
+    padding: 12px 24px;
+    font-size: 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: bold;
+}
+.mark-viewed-btn:hover { background: #46d369; color: #141414; }
+.mark-viewed-btn.viewed { border-color: #666; color: #666; }
+.mark-viewed-btn.viewed:hover { background: #333; color: #999; }
+
+/* === CATEGORY === */
+.category { margin-bottom: 50px; }
+.category-title { 
+    font-size: 26px; 
+    margin-bottom: 20px; 
+    padding-left: 15px; 
+    border-left: 4px solid #e50914; 
+}
+
+.cards-grid { 
+    display: grid; 
+    grid-template-columns: repeat(5, 1fr); 
+    gap: 20px; 
+}
+
+/* === CARD === */
+.card { 
+    cursor: pointer; 
+    transition: all 0.3s ease; 
+    border-radius: 8px; 
+    overflow: hidden; 
+    position: relative; 
+    background: #1a1a1a;
+}
+
+.card:hover { 
+    transform: scale(1.05); 
+    box-shadow: 0 8px 25px rgba(0,0,0,0.5); 
+}
+
+.card img { 
+    width: 100%; 
+    height: 200px; 
+    object-fit: cover; 
+    display: block; 
+}
+
+.card-title { 
+    padding: 12px; 
+    font-size: 13px; 
+    font-weight: 500; 
+    white-space: nowrap; 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+}
+
+.card-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: #46d369;
+    color: #141414;
+    font-size: 10px;
+    font-weight: bold;
+    padding: 3px 8px;
+    border-radius: 3px;
+}
+
+.card-badge.skipped { background: #666; color: #fff; }
+
+.empty-msg {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+    font-size: 18px;
+}
+
+.close-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 28px;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+.close-btn:hover { opacity: 1; }
+
+/* ============================================= */
+/* MEDIA QUERIES - RESPONSIVE                    */
+/* ============================================= */
+
+/* === PC (>1024px) === */
+@media (min-width: 1025px) {
+    .cards-grid { grid-template-columns: repeat(5, 1fr); }
+    .detail-panel { flex-direction: row; }
+    .detail-poster { width: 280px; height: 420px; }
+}
+
+/* === Tablet (768-1024px) === */
+@media (max-width: 1024px) and (min-width: 769px) {
+    .cards-grid { grid-template-columns: repeat(4, 1fr); }
+    .header { padding: 12px 20px; }
+    main { padding: 70px 20px 20px 20px; }
+    .detail-panel { 
+        flex-direction: row; 
+        padding: 20px;
+    }
+    .detail-poster { width: 220px; height: 330px; }
+    .detail-title { font-size: 28px; }
+}
+
+/* === Móvil apaisado (landscape, 500-768px) === */
+@media (max-width: 768px) and (min-width: 500px) and (orientation: landscape) {
+    .cards-grid { grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .header { padding: 10px 15px; gap: 10px; }
+    .logo { font-size: 22px; }
+    .logo .big { font-size: 28px; }
+    .nav-btn { font-size: 13px; padding: 6px 12px; }
+    .stats { font-size: 12px; padding: 6px 10px; }
+    main { padding: 60px 15px 15px 15px; }
+    
+    .card img { height: 120px; }
+    .card-title { padding: 8px; font-size: 11px; }
+    
+    .detail-panel { 
+        flex-direction: row; 
+        padding: 15px;
+        top: 60px;
+        max-height: 80vh;
+    }
+    .detail-poster { width: 140px; height: 210px; }
+    .detail-title { font-size: 20px; margin-bottom: 8px; }
+    .detail-meta { font-size: 12px; margin-bottom: 12px; }
+    .detail-synopsis { font-size: 12px; line-height: 1.5; }
+    .genre-tag { padding: 4px 10px; font-size: 11px; }
+    .netflix-btn { padding: 10px 20px; font-size: 13px; }
+    .mark-viewed-btn { padding: 8px 16px; font-size: 12px; }
+}
+
+/* === Móvil vertical (portrait, <500px) === */
+@media (max-width: 500px) and (orientation: portrait) {
+    .cards-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .header { padding: 10px 12px; gap: 8px; }
+    .logo { font-size: 18px; }
+    .logo .big { font-size: 24px; }
+    .nav-btn { font-size: 12px; padding: 6px 10px; }
+    .stats { font-size: 11px; padding: 5px 8px; }
+    main { padding: 55px 10px 15px 10px; }
+    
+    .card img { height: 180px; }
+    .card-title { padding: 8px; font-size: 11px; }
+    
+    .detail-panel { 
+        flex-direction: column; 
+        padding: 15px;
+        top: 55px;
+        width: 95%;
+        max-height: 90vh;
+    }
+    .detail-poster { 
+        width: 100%; 
+        height: auto; 
+        max-height: 250px;
+        object-fit: contain;
+    }
+    .detail-title { font-size: 18px; margin-bottom: 8px; }
+    .detail-meta { font-size: 12px; margin-bottom: 12px; }
+    .detail-synopsis { font-size: 13px; line-height: 1.5; }
+    .detail-genres { margin-bottom: 15px; }
+    .genre-tag { padding: 4px 10px; font-size: 11px; }
+    .detail-actions { flex-direction: column; }
+    .netflix-btn { 
+        width: 100%; 
+        text-align: center; 
+        padding: 12px 20px; 
+    }
+    .mark-viewed-btn { width: 100%; }
+    
+    .category-title { font-size: 18px; }
+    .category { margin-bottom: 30px; }
+}
+
+/* === Móvil pequeño vertical (<360px) === */
+@media (max-width: 360px) and (orientation: portrait) {
+    .cards-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .card img { height: 150px; }
+    .card-title { padding: 6px; font-size: 10px; }
+}
     </style>
 </head>
 <body>
@@ -244,160 +356,1432 @@
         <div id="content"><div class="loading">Cargando catálogo...</div></div>
     </main>
 
-    <!-- Datos en archivo JS externo (funciona en file://) -->
-    <script src="data.js"></script>
     <script>
-        let allSeries = [];
-        let currentSection = 'pendientes';
-        let selectedSeries = null;
-        let viewedSeries = JSON.parse(localStorage.getItem('viewedSeries') || '[]');
+const SERIES_DATA = {
+  "lastUpdate": "2026-05-07T18:55:00",
+  "totalSeries": 85,
+  "notViewed": 49,
+  "viewed": 21,
+  "skipped": 15,
+  "series": [
+    {
+      "id": "mr041",
+      "title": "Las últimas horas de Mario Biondo",
+      "year": "2024",
+      "episodes": 3,
+      "duration": "~50 min",
+      "synopsis": "Documental sobre la misteriosa muerte del cámara italiano Mario Biondo.",
+      "cast": [],
+      "genres": ["True Crime", "Skipped", "Documental"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABavB_H-BYHT1KON6mSKjYDagNi6G_8NmQO0yitsu3Q0ANMLnII67d5LuJ-sDKK5dnMo39cgtTXq5z1ECIDeY4LPuAiHgWag7hCC6.webp?r=ba0://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABavB_H-BYHT1KON6mSKjYDagNi6G_8NmQO0yitsu3Q0ANMLnII67d5LuJ-sDKK5dnMo39cgtTXq5z1ECIDeY4LPuAiHgWag7hCC6.webp?r=ba0",
+      "netflixUrl": "https://www.netflix.com/title/81648987",
+      "netflixId": "81648987",
+      "viewed": false
+    },
+    {
+      "id": "mr042",
+      "title": "Nevenka",
+      "year": "2024",
+      "episodes": 4,
+      "duration": "~50 min",
+      "synopsis": "Sobre el caso de Nevenka Fernández, víctima de acoso en Ponferrada.",
+      "cast": [],
+      "genres": ["True Crime", "Skipped", "Documental"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABUYqd5ML9JUkbuT0KYaymgm3eA34DpscbxgmBmNOiqtYrCl_VM_Lt9lNQBM9Fdxw-UlUr3SXlbiq4ERNxUNy1gvvq0e5ctDDJRcC.webp?r=480://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABUYqd5ML9JUkbuT0KYaymgm3eA34DpscbxgmBmNOiqtYrCl_VM_Lt9lNQBM9Fdxw-UlUr3SXlbiq4ERNxUNy1gvvq0e5ctDDJRcC.webp?r=480",
+      "netflixUrl": "https://www.netflix.com/title/81405211",
+      "netflixId": "81405211",
+      "viewed": false
+    },
+    {
+      "id": "mr043",
+      "title": "El depredador de Sevilla",
+      "year": "2025",
+      "episodes": 3,
+      "duration": "~50 min",
+      "synopsis": "True Crime sobre un asesino en serie en Sevilla.",
+      "cast": [],
+      "genres": ["True Crime", "Skipped"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABdtioK3vO0H-CuXWgJgky__vG_9WdHHf21Xnk0xtkF_Ou3qYIN4-GfcDF90tVOWSF-OP3BG55_wwBYD8MkRt1x1vq7mX2sIpjHAR.webp?r=dc9://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABdtioK3vO0H-CuXWgJgky__vG_9WdHHf21Xnk0xtkF_Ou3qYIN4-GfcDF90tVOWSF-OP3BG55_wwBYD8MkRt1x1vq7mX2sIpjHAR.webp?r=dc9",
+      "netflixUrl": "https://www.netflix.com/title/82090519",
+      "netflixId": "82090519",
+      "viewed": false
+    },
+    {
+      "id": "mr044",
+      "title": "El asesino de TikTok",
+      "year": "2025",
+      "episodes": 3,
+      "duration": "~50 min",
+      "synopsis": "True Crime sobre un asesino que utilizaba redes sociales.",
+      "cast": [],
+      "genres": ["True Crime", "Skipped"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABeirShg_maGYDVJ5NR0vVirqsYiM4QfTd8IyEeb-wtAIJ9AMstes3RRlJ2z2KAp9acimhQk3Hz0Xi8_5dVhh4gEvKhiUZi0FzSSH.webp?r=ca4://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABeirShg_maGYDVJ5NR0vVirqsYiM4QfTd8IyEeb-wtAIJ9AMstes3RRlJ2z2KAp9acimhQk3Hz0Xi8_5dVhh4gEvKhiUZi0FzSSH.webp?r=ca4",
+      "netflixUrl": "https://www.netflix.com/title/81957000",
+      "netflixId": "81957000",
+      "viewed": false
+    },
+    {
+      "id": "mr045",
+      "title": "11M",
+      "year": "2024",
+      "episodes": 4,
+      "duration": "~50 min",
+      "synopsis": "Documental sobre los atentados del 11-M en Madrid.",
+      "cast": [],
+      "genres": ["Documental", "True Crime", "Skipped"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABc8Ilg7maSa3JxxWr5wWh_gj-DZBKeUwyh34Ynn7Kg7xr1duUaz50WLRsByZ3fDTqXAJAg8P1Jv3QSFQBmvdAt70Zy5GDU2kKjzA.webp?r=226://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABc8Ilg7maSa3JxxWr5wWh_gj-DZBKeUwyh34Ynn7Kg7xr1duUaz50WLRsByZ3fDTqXAJAg8P1Jv3QSFQBmvdAt70Zy5GDU2kKjzA.webp?r=226",
+      "netflixUrl": "https://www.netflix.com/title/81568624",
+      "netflixId": "81568624",
+      "viewed": false
+    },
+    {
+      "id": "mr047",
+      "title": "Un cuento perfecto",
+      "year": "2023",
+      "episodes": 6,
+      "duration": "~50 min",
+      "synopsis": "Romance entre una heredera y un camarero.",
+      "cast": [],
+      "genres": ["Romance", "Drama"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABZa4yiHFMbzhIkGQgFuOp9RSEjfOfUv0fALD7Pss6FLdpZtE_wB5Ps0SpnUCgdYv0BPzlZDMQ6TWdTCn4_PJpQrm-_mNGaYCeC41.webp?r=41d://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABZa4yiHFMbzhIkGQgFuOp9RSEjfOfUv0fALD7Pss6FLdpZtE_wB5Ps0SpnUCgdYv0BPzlZDMQ6TWdTCn4_PJpQrm-_mNGaYCeC41.webp?r=41d",
+      "netflixUrl": "https://www.netflix.com/title/81388033",
+      "netflixId": "81388033",
+      "viewed": false
+    },
+    {
+      "id": "mr048",
+      "title": "La realeza",
+      "year": "2025",
+      "episodes": 8,
+      "duration": "~50 min",
+      "synopsis": "Drama sobre una familia real en apuros.",
+      "cast": [],
+      "genres": ["Drama"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABcmBT1Q1b-YqsS3D8N-VeibdtORWIqbRu1AdujeutrYR1CStqaoi4XhMe9-7dGiCwvxXQgWkU_i9cF_hozQo4AKSx4TQjXwr6XO1.webp?r=cdc://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABcmBT1Q1b-YqsS3D8N-VeibdtORWIqbRu1AdujeutrYR1CStqaoi4XhMe9-7dGiCwvxXQgWkU_i9cF_hozQo4AKSx4TQjXwr6XO1.webp?r=cdc",
+      "netflixUrl": "https://www.netflix.com/title/81593166",
+      "netflixId": "81593166",
+      "viewed": false
+    },
+    {
+      "id": "mr049",
+      "title": "Si no hubiera visto el sol",
+      "year": "2025",
+      "episodes": 6,
+      "duration": "~50 min",
+      "synopsis": "Thriller sobre un crimen sin resolver.",
+      "cast": [],
+      "genres": ["Thriller"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABR1AMGCvvCgpAQZWIrD0NMkXxfdXNSJj-V5g51LuaKh7PzthFSLR1Bab1Sf8lmldt5CoWnhHiAbIL_uoLnfgdqjPbO54pYq39-yR.webp?r=926://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABR1AMGCvvCgpAQZWIrD0NMkXxfdXNSJj-V5g51LuaKh7PzthFSLR1Bab1Sf8lmldt5CoWnhHiAbIL_uoLnfgdqjPbO54pYq39-yR.webp?r=926",
+      "netflixUrl": "https://www.netflix.com/title/81766274",
+      "netflixId": "81766274",
+      "viewed": false
+    },
+    {
+      "id": "mr050",
+      "title": "900 días sin Anabel",
+      "year": "2024",
+      "episodes": 4,
+      "duration": "~50 min",
+      "synopsis": "True Crime sobre la desaparición de Anabel.",
+      "cast": [],
+      "genres": ["True Crime", "Skipped", "Documental"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABQ1o7WT0CAjKW33niByBdF7xBqVyAg9LZNkZP9iJBx3C_r_b9MZSBbXenSEXJvuDuhI3_diUJRG7BSMrLSzBSShuv2X6U5uoTfOy.webp?r=122://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABQ1o7WT0CAjKW33niByBdF7xBqVyAg9LZNkZP9iJBx3C_r_b9MZSBbXenSEXJvuDuhI3_diUJRG7BSMrLSzBSShuv2X6U5uoTfOy.webp?r=122",
+      "netflixUrl": "https://www.netflix.com/title/81742747",
+      "netflixId": "81742747",
+      "viewed": false
+    },
+    {
+      "id": "mr051",
+      "title": "El caso Wanninkhof - Carabantes",
+      "year": "2024",
+      "episodes": 3,
+      "duration": "~50 min",
+      "synopsis": "True Crime sobre el error judicial del caso Wanninkhof.",
+      "cast": [],
+      "genres": ["True Crime", "Skipped", "Documental"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABYFY3AWy0E7vedNuogk2VTTFUBv76pGanEzQtqVJI5YSEP8Inv_sALA-tYOs-_KqnTVhL3ZoiSq5WkaRI_QDCLOj8Y2L3hBZrw1q.webp?r=1f4://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABYFY3AWy0E7vedNuogk2VTTFUBv76pGanEzQtqVJI5YSEP8Inv_sALA-tYOs-_KqnTVhL3ZoiSq5WkaRI_QDCLOj8Y2L3hBZrw1q.webp?r=1f4",
+      "netflixUrl": "https://www.netflix.com/title/81179778",
+      "netflixId": "81179778",
+      "viewed": false
+    },
+    {
+      "id": "mr052",
+      "title": "El caso Alcàsser",
+      "year": "2019",
+      "episodes": 5,
+      "duration": "~50 min",
+      "synopsis": "Documental sobre el trágico caso de las niñas de Alcàsser.",
+      "cast": [],
+      "genres": ["True Crime", "Skipped", "Documental"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABUiLMXDXAjh6AeoXUlk-IaaU2l2w8dRuXRlV6waRm5-au_WuZ8jCuuLwEKLFqlklTSo08henphA9EFilt0gZkr2KGZkgWYWt2mH_.webp?r=697://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABUiLMXDXAjh6AeoXUlk-IaaU2l2w8dRuXRlV6waRm5-au_WuZ8jCuuLwEKLFqlklTSo08henphA9EFilt0gZkr2KGZkgWYWt2mH_.webp?r=697",
+      "netflixUrl": "https://www.netflix.com/title/80213115",
+      "netflixId": "80213115",
+      "viewed": false
+    },
+    {
+      "id": "mr053",
+      "title": "¿Dónde está Marta?",
+      "year": "2022",
+      "episodes": 4,
+      "duration": "~50 min",
+      "synopsis": "True Crime sobre la desaparición de Marta del Castillo.",
+      "cast": [],
+      "genres": ["True Crime", "Skipped", "Documental"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABV9MsDEpLOs6qxVrmr9T20_Xt-JH03bOn2bsrpG586Zis0c7WDMlj38xpNRHmDqUD6pa4EryGvGu0TMH-lmV9o4AngUBrIb2DmWi.webp?r=23a://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABV9MsDEpLOs6qxVrmr9T20_Xt-JH03bOn2bsrpG586Zis0c7WDMlj38xpNRHmDqUD6pa4EryGvGu0TMH-lmV9o4AngUBrIb2DmWi.webp?r=23a",
+      "netflixUrl": "https://www.netflix.com/title/81306172",
+      "netflixId": "81306172",
+      "viewed": false
+    },
+    {
+      "id": "mr054",
+      "title": "Las cintas de Rosa Peral",
+      "year": "2023",
+      "episodes": 3,
+      "duration": "~50 min",
+      "synopsis": "True Crime sobre el caso de Rosa Peral.",
+      "cast": [],
+      "genres": ["True Crime", "Skipped", "Documental"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABVlLkScSO2OOxOHh_zzzUSCb285FYA7eVCSx23LQbBORo7w3knc-lbDzEzxbcnIBidBQ_rBztBbHDvCTf1Wl1fSP1BZbYkDhON0U.webp?r=4da://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABVlLkScSO2OOxOHh_zzzUSCb285FYA7eVCSx23LQbBORo7w3knc-lbDzEzxbcnIBidBQ_rBztBbHDvCTf1Wl1fSP1BZbYkDhON0U.webp?r=4da",
+      "netflixUrl": "https://www.netflix.com/title/81674394",
+      "netflixId": "81674394",
+      "viewed": false
+    },
+    {
+      "id": "mr055",
+      "title": "800 metros",
+      "year": "2022",
+      "episodes": 3,
+      "duration": "~50 min",
+      "synopsis": "Documental sobre los atentados de Barcelona y Cambrils.",
+      "cast": [],
+      "genres": ["Documental", "True Crime", "Skipped"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABTWjRdeQVdXueQmLzUWjO8KngueHq3BXCb25tCK2DSCH-6yXRm034sxTrMqblixu7N53y7LUwcSvTP7VLbbA814RE_aVwKEhzLDH.webp?r=e9a://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABTWjRdeQVdXueQmLzUWjO8KngueHq3BXCb25tCK2DSCH-6yXRm034sxTrMqblixu7N53y7LUwcSvTP7VLbbA814RE_aVwKEhzLDH.webp?r=e9a",
+      "netflixUrl": "https://www.netflix.com/title/81275696",
+      "netflixId": "81275696",
+      "viewed": false
+    },
+    {
+      "id": "mr002",
+      "title": "El fuego de la venganza",
+      "year": "2026",
+      "episodes": 7,
+      "duration": "~50 min",
+      "synopsis": "Remake de Man on Fire. Un exmercenario de las Fuerzas Especiales protege a una joven en Río de Janeiro mientras busca venganza.",
+      "cast": ["Yahya Abdul-Mateen II", "Bobby Cannavale", "Alice Braga", "Billie Boullet"],
+      "genres": ["Thriller", "Acción"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/SO2HoVCx33X8phZh2pZZmQ4QgNY/AAAABfwtY9k9MZA_SWtWtgXxAnBxXSD_4ar9tA9RP5Sfzx8YZ9EdmwiHDff7WY0MGE5pVwmk9Bq95UkdDx0W6uROMAvQbZpuSL0.png?r=72f",
+      "netflixUrl": "https://www.netflix.com/title/81645170",
+      "netflixId": "81645170",
+      "viewed": false
+    },
+    {
+      "id": "mr003",
+      "title": "Innato",
+      "year": "2025",
+      "episodes": 8,
+      "duration": "~45 min",
+      "synopsis": "Sara, psicóloga e hija de un asesino en serie conocido como 'el asesino del gasoil', ve su vida trastocada cuando su padre sale de prisión tras 25 años.",
+      "cast": ["Elena Anaya", "Imanol Arias", "Roberto Álamo", "Emma Suárez", "Aura Garrido"],
+      "genres": ["Thriller", "Drama"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABdWcEMcdY2GA6A6NkpeU8HO4IfZ0nUoYC9P-ICbworVIESxHZG2ZzD66DjPWzxYDSP6ntqKNl8hYUtAEtvHOI5kc77LzCzVw5FJe.webp?r=0d5",
+      "netflixUrl": "https://www.netflix.com/title/81952992",
+      "netflixId": "81952992",
+      "viewed": false
+    },
+    {
+      "id": "mr004",
+      "title": "Nadie nos vio partir",
+      "year": "2025",
+      "episodes": 5,
+      "duration": "~51 min",
+      "synopsis": "La venganza desencadena un juego del escondite cuando Leo secuestra a sus hijos y se los lleva al extranjero.",
+      "cast": ["Tessa Ia", "Emiliano Zurita", "Juan Manuel Bernal", "Flavio Medina"],
+      "genres": ["Thriller", "Drama"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/0Qzqdxw-HG1AiOKLWWPsFOUDA2E/AAAABcY7u_Y5uH3HohOIy5-LxpzZmH9rmgrc740WoEb0LGMZJFJ0tPLjNBkuA3xvqAXl82fMAE89gPVnZ2jbQdmFy465FQ2EGwmBACU96Hhe493IzA8LM2xqnjvyW0nvMwMpl7OoIrnzJbGLNbin-ajGUftmvXYK_RUxk7dvohAPOCChI4XOptiWiPlPgpZPClP_Yzjwg_dGDVbw9tSVdRVuZ2YdFa5ivG8BXUWvW63J.webp?r=068",
+      "netflixUrl": "https://www.netflix.com/title/81662605",
+      "netflixId": "81662605",
+      "viewed": false
+    },
+    {
+      "id": "mr005",
+      "title": "No sabéis quién soy",
+      "year": "2022",
+      "episodes": 4,
+      "duration": "~60 min",
+      "synopsis": "Un joven vendedor de coches londinense acusado de asesinato narra su versión ante el jurado.",
+      "cast": ["Samuel Adewunmi", "Sophie Wilde", "Roger Jean Nsengiyumva"],
+      "genres": ["Thriller", "Judicial"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABTmpEeg7sJg0nAFwaaIQugglzL9LzyEkwqt_7GFnfmKK8d4yY3Qu-0pA2S825p0jzUpVRPs1WLnGnX43ttqTDqEBduXRtJSKqLf3.webp?r=514",
+      "netflixUrl": "https://www.netflix.com/title/81349458",
+      "netflixId": "81349458",
+      "viewed": false
+    },
+    {
+      "id": "mr006",
+      "title": "Taboo",
+      "year": "2017",
+      "episodes": 8,
+      "duration": "~60 min",
+      "synopsis": "Un aventurero dado por fallecido regresa a Londres para vengar la muerte de su padre enfrentándose a la Compañía de las Indias Orientales.",
+      "cast": ["Tom Hardy", "Jonathan Pryce", "Oona Chaplin"],
+      "genres": ["Thriller", "Histórico"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/0Qzqdxw-HG1AiOKLWWPsFOUDA2E/AAAABSf75B7krvKyVU52JFSZtqdyND-bj1Psk0ixt6qBrfN2THfa_6zee-v441RhUjc-732y-Df3VFR0OO6yh5fU7ARZ-jZFjXZeQ04.webp?r=212",
+      "netflixUrl": "https://www.netflix.com/title/80158276",
+      "netflixId": "80158276",
+      "viewed": false
+    },
+    {
+      "id": "mr007",
+      "title": "El Monstruo de Florencia",
+      "year": "2025",
+      "episodes": 4,
+      "duration": "~50 min",
+      "synopsis": "Un asesino en serie anda suelto en la Toscana. Una agente audaz intenta atrapar al culpable antes de que ataque de nuevo. Basada en hechos reales.",
+      "cast": [],
+      "genres": ["True Crime", "Skipped", "Thriller"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABXMtRyoXkPfEqmY2gs0Nj7pFL8e1Y0bNS_ShXuuLVOg07Upalp7hK6U2xse32OHozETsCLBKMsD7NPDzSU7fbBnuWWe8Nfxhax2Z.webp?r=8ba",
+      "netflixUrl": "https://www.netflix.com/title/81684762",
+      "netflixId": "81684762",
+      "viewed": false
+    },
+    {
+      "id": "mr008",
+      "title": "Dos tumbas",
+      "year": "2025",
+      "episodes": 3,
+      "duration": "~50 min",
+      "synopsis": "La valiente abuela de una joven desaparecida lo arriesga todo para encontrarla. Aclamada por su potencia narrativa (El Confidencial).",
+      "cast": [],
+      "genres": ["Drama", "Thriller"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABTteRhAHocj0jhSG7gbL56Kn2roBt8IhFYNNDGhbIwJLsxr7ZV9RTQhJ6P3KXr5fMgPOK18XRW0zXlAdNxhVpHt9Wx2ojBh_8lE.webp?r=af7",
+      "netflixUrl": "https://www.netflix.com/title/81666695",
+      "netflixId": "81666695",
+      "viewed": false
+    },
+    {
+      "id": "mr009",
+      "title": "Todo un hombre",
+      "year": "2024",
+      "episodes": 6,
+      "duration": "~50 min",
+      "synopsis": "El despiadado magnate inmobiliario Charlie Croker (Jeff Daniels) desprecia la debilidad. Pero cuando sus enemigos derriban su emporio...",
+      "cast": ["Jeff Daniels"],
+      "genres": ["Drama"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABVAP5-yDBMNQ148CgfUynfMCapmAE9yzXRq4HToD7pwYqb-pxqEMD3g237svGiGXFyDAQJ43b5F3sRM5nmuQ_pH5YKI-78hiioA.webp?r=bfa",
+      "netflixUrl": "https://www.netflix.com/title/81496941",
+      "netflixId": "81496941",
+      "viewed": false
+    },
+    {
+      "id": "mr010",
+      "title": "Atrapados",
+      "year": "2025",
+      "episodes": 6,
+      "duration": "~45 min",
+      "synopsis": "Una tenaz periodista se obsesiona con desenmascarar a un abusador de menores.",
+      "cast": [],
+      "genres": ["Thriller", "Periodismo"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABfD7Dehk_3egTiue0pEYk6rgTyOeCEu1N4hqKp2qPz7hobBkIbOwPXCmCxR2zcPDBtxrMIeuUzUuXpPoY5pjpSx64DDLY24X6i_unMv3B251NjdePHqhSNOQIDKr-uKXvzWOd4A6oMZu3RXVCZoL46C1WSbDd4dq7tjDYDTkgneCCg.webp?r=8fa",
+      "netflixUrl": "https://www.netflix.com/title/81669841",
+      "netflixId": "81669841",
+      "viewed": false
+    },
+    {
+      "id": "mr011",
+      "title": "La jefa",
+      "year": "2024",
+      "episodes": 6,
+      "duration": "~50 min",
+      "synopsis": "Thriller español. Una empresaria exitosa ve su vida perfecta amenazada cuando su pasado vuelve.",
+      "cast": [],
+      "genres": ["Thriller"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABdKF_9yMY23qJjELu4fhXWpoHT1CYqOq3Lo9-CtKpSOFPaOhXVIaTQ_zDUIfgzxCnYVBm2RgUBwqpbRSjvVp-qjuJTk8czOTMzI.webp?r=ca4",
+      "netflixUrl": "https://www.netflix.com/title/81085817",
+      "netflixId": "81085817",
+      "viewed": false
+    },
+    {
+      "id": "mr012",
+      "title": "Sra. Playmen",
+      "year": "2025",
+      "episodes": 7,
+      "duration": "~50 min",
+      "synopsis": "Inspirada en hechos reales. Adelina Tattilo toma el control de Playmen, la revista erótica italiana más icónica de los años 70.",
+      "cast": ["Carolina Crescentini", "Francesco Colella", "Filippo Nigro", "Giuseppe Maggio"],
+      "genres": ["Drama", "Biográfico"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABXMtRyoXkPfEqmY2gs0Nj7pFL8e1Y0bNS_ShXuuLVOg07Upalp7hK6U2xse32OHozETsCLBKMsD7NPDzSU7fbBnuWWe8Nfxhax2Z.webp?r=8ba",
+      "netflixUrl": "https://www.netflix.com/title/81481336",
+      "netflixId": "81481336",
+      "viewed": false
+    },
+    {
+      "id": "mr013",
+      "title": "Il processo",
+      "year": "2019",
+      "episodes": 8,
+      "duration": "~50 min",
+      "synopsis": "Una fiscal italiana en Mantova enfrenta el caso más importante de su carrera: el brutal asesinato de una joven de 17 años.",
+      "cast": ["Vittoria Puccini", "Francesco Scianna", "Camilla Filippi", "Maurizio Lastrico"],
+      "genres": ["Thriller", "Judicial"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABUL3zsXJb58XeYWOqYWlPM0gNz_EDHB1WBIodaGFcGbGJKNZDJpocffskIA3UIB5mWySV6D8Ek0G6LdYOQjIJkS8HEPWjVR_tSXoUBEHv-MXPnndLyTHMaSkIP8XCL3muJMrBnmhd7ce3K0WAcB0QwAtksWewPtm2f4.webp?r=3ff",
+      "netflixUrl": "https://www.netflix.com/title/81051234",
+      "netflixId": "81051234",
+      "viewed": false
+    },
+    {
+      "id": "mr014",
+      "title": "Las Abogadas",
+      "year": "2024",
+      "episodes": 6,
+      "duration": "~53 min",
+      "synopsis": "Inspirada en hechos reales. Cuatro abogadas que lucharon por la justicia durante la transición española.",
+      "cast": ["Paula Usero", "Irene Escolar", "Elisabet Casanovas", "Almudena Pascual", "Álvaro Rico"],
+      "genres": ["Drama", "Histórico"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABVZdmikb2BJRKlCgBleUw2Ckwxee2NOtLjLXSuZkZGwCYnD0aBVv6p2nbfJeivuKt_2majqCNNxE61kHpZ62EXFkCN845MWpw_zg.webp?r=7ce",
+      "netflixUrl": "https://www.netflix.com/title/81918931",
+      "netflixId": "81918931",
+      "viewed": false
+    },
+    {
+      "id": "mr015",
+      "title": "El tiempo que te doy",
+      "year": "2021",
+      "episodes": 10,
+      "duration": "~10 min",
+      "synopsis": "Lina intenta superar su ruptura con Nico reduciendo minuto a minuto el tiempo que piensa en él.",
+      "cast": ["Nadia de Santiago", "Álvaro Cervantes"],
+      "genres": ["Romance", "Drama"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/MQ4MI4yJWUNHiJvTFAbA9q3pxcg/AAAABQRU9Zb0ycdg6R806jkL0YLusr87tM3-YKLoxwdYXQFjWP1Vn7mK8uj1pukEpvOE50Dh2Jrht5-sBAm0LJsurhdyd2yWnW65sD0V5gyfVzVWekZYAWKGjER5YvxIfXcTxVeFdKNPy6ryGDxgIbB08pxv1UiwN_IcAqLIwKavJ6nXFp_pNzk11Q.webp?r=91e",
+      "netflixUrl": "https://www.netflix.com/title/81262228",
+      "netflixId": "81262228",
+      "viewed": false
+    },
+    {
+      "id": "mr016",
+      "title": "Post mortem: Nadie muere en Skarnes",
+      "year": "2021",
+      "episodes": 6,
+      "duration": "~45 min",
+      "synopsis": "Una noruega despierta en la morgue con sed de sangre.",
+      "cast": ["Kathrine Thorborg Johansen", "Anders Danielsen Lie", "Bjørn Sundquist"],
+      "genres": ["Thriller", "Fantasía"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABZbqbwlrdGxps9BYHmdCvAp6ggwb_PxWzwppfqq77ldU1RdHJQBjwP4dMf3cgF3bCboLPtl7mR4yio4T8DRC-kzbzEcFaJu5Y44.webp?r=804",
+      "netflixUrl": "https://www.netflix.com/title/81164276",
+      "netflixId": "81164276",
+      "viewed": false
+    },
+    {
+      "id": "mr017",
+      "title": "¿Debería casarme con un asesino?",
+      "year": "2024",
+      "episodes": 4,
+      "duration": "~45 min",
+      "synopsis": "Documental. Caroline Muirhead descubre que su novio asesinó a un ciclista.",
+      "cast": ["Documental - Caroline Muirhead", "Alexander McKellar"],
+      "genres": ["True Crime", "Skipped", "Documental"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABRbklByUtYtBe4qou_161RQcziAA1nwSozet1Vsan8e1BVxZbevTpsbpdPE6PrlxcQz3SuQbahjaCIej0d8WS5IW_7IrCck7dWJ4.webp?r=a6c",
+      "netflixUrl": "https://www.netflix.com/title/81924891",
+      "netflixId": "81924891",
+      "viewed": false
+    },
+    {
+      "id": "mr018",
+      "title": "El peor ex imaginable",
+      "year": "2024",
+      "episodes": 4,
+      "duration": "~45 min",
+      "synopsis": "Docuserie sobre casos reales de ex parejas abusivas y planes de asesinato.",
+      "cast": ["Documental"],
+      "genres": ["True Crime", "Skipped", "Documental"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABciqZQ-TzExDtAdfrsGOEXkCXSnGILSaa34U-4LUddRS4qv2IzT__4u3aQpnDAwg4XSe_czud0N44ARxVnQ-4qlyc3dPLaM3EN2X.webp?r=b88",
+      "netflixUrl": "https://www.netflix.com/title/81666858",
+      "netflixId": "81666858",
+      "viewed": false
+    },
+    {
+      "id": "mr019",
+      "title": "Cayetana, La Duquesa De Todos",
+      "year": "2024",
+      "episodes": 4,
+      "duration": "~50 min",
+      "synopsis": "Documental biográfico sobre Cayetana Fitz-James Stuart, la XVIII Duquesa de Alba.",
+      "cast": ["Documental"],
+      "genres": ["Biográfico", "Documental"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABW-Dyop9bJKO3HE6EXeiFqwmSivdOwwy1CxUIpPosRKkf_cuL7ZoceKqrykNeIZMzzjPN3PW5GOzhImV4FD7r4a2Wiw0PYgbnU0.webp?r=d39",
+      "netflixUrl": "https://www.netflix.com/title/82063818",
+      "netflixId": "82063818",
+      "viewed": false
+    },
+    {
+      "id": "mr020",
+      "title": "Esa noche",
+      "year": "2026",
+      "episodes": 6,
+      "duration": "~50 min",
+      "synopsis": "Las hermanas Arbizu de Pamplona no se parecen en nada, pero todas saben dónde enterraron aquel cuerpo.",
+      "cast": [],
+      "genres": ["Thriller", "Drama"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABe3SX87RtPpcM_SqiQM7SrBs5T1xUfjWj_XtbsghSgsA6ct0anWkfoP-_OyCNNyx1kTaJcP0vjC4R2TykKKQtI4SbsB7uMutvYc.webp?r=eb1",
+      "netflixUrl": "https://www.netflix.com/title/81613228",
+      "netflixId": "81613228",
+      "viewed": false
+    },
+    {
+      "id": "mr021",
+      "title": "Love & Death",
+      "year": "2023",
+      "episodes": 7,
+      "duration": "~50 min",
+      "synopsis": "True Crime. Elizabeth Montgomery asesina a su amiga con un hacha en Texas, 1980.",
+      "cast": ["Elizabeth Olsen", "Jesse Plemons"],
+      "genres": ["True Crime", "Skipped", "Thriller"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABVJcA9VPPVssOnUaK2dl9WXp8c0-To6fJaeYgVS65BQdBCL31CE191rqhxBd25tLS89g-PGi0pAt-Scp1K4qYb9hlQ_eLzdilYI.webp?r=e20",
+      "netflixUrl": "https://www.netflix.com/title/81698459",
+      "netflixId": "81698459",
+      "viewed": false
+    },
+    {
+      "id": "mr022",
+      "title": "Godless",
+      "year": "2017",
+      "episodes": 7,
+      "duration": "~60 min",
+      "synopsis": "Un forajido con buen corazón huye de su banda y se refugia en un pueblo habitado solo por mujeres.",
+      "cast": ["Jeff Daniels", "Michelle Dockery"],
+      "genres": ["Western", "Drama"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABUulv46sEx9aZ5lfThBIzsPv9VsSJR8zM2IRbeZiCwIm9W0ATgbGw7n3eMqGRJnZnMUjPMirVRbjBUtRo2uPJTQ0g_t5L7C2Yfk.webp?r=49b",
+      "netflixUrl": "https://www.netflix.com/title/80097340",
+      "netflixId": "80097340",
+      "viewed": false
+    },
+    {
+      "id": "mr023",
+      "title": "The Chestnut Man",
+      "year": "2021",
+      "episodes": 6,
+      "duration": "~50 min",
+      "synopsis": "Un detective danés persigue a un asesino que deja muñecos de castaña en las escenas del crimen.",
+      "cast": ["Danica Curcic", "Mikkel Boe Følsgaard"],
+      "genres": ["Thriller", "Nórdico"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABRWshqu8IfDQqO4SAUCFlj8-dUfK_fd4_u_KMccuDKddS_pYUVeNKTMy7ldls_l54E6-kMF99XgjWSgypRvBQK4o_NM0qUjTntU.webp?r=a6f",
+      "netflixUrl": "https://www.netflix.com/title/81039388",
+      "netflixId": "81039388",
+      "viewed": false
+    },
+    {
+      "id": "mr024",
+      "title": "The Staircase",
+      "year": "2022",
+      "episodes": 8,
+      "duration": "~50 min",
+      "synopsis": "True Crime. Basada en el caso real de Michael Peterson, acusado de asesinar a su esposa.",
+      "cast": ["Colin Firth", "Toni Collette"],
+      "genres": ["True Crime", "Skipped", "Thriller"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABXjpyQMhRemdU_6-X19Lhmeo_hQeXMumISYYZ3l6-7YWPejwvlp3cbKojUS6NTVrFt_qdstfRX62EV_dQuO7sTjpJGAFCtmU5WM.webp?r=901",
+      "netflixUrl": "https://www.netflix.com/title/82166981",
+      "netflixId": "82166981",
+      "viewed": false
+    },
+    {
+      "id": "mr025",
+      "title": "Bosque adentro",
+      "year": "2019",
+      "episodes": 8,
+      "duration": "~50 min",
+      "synopsis": "Una abogada investiga un caso de abuso en una comunidad religiosa aislada.",
+      "cast": [],
+      "genres": ["Thriller", "Drama"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABXKtGCAY4saoqJa7mXjBA94BYyanyEuqcede8Sdwj8r-wa8rkAJZWXie4VJ73vTBleXGt7cek0XSTQSNDq_CpGYB6Zgzok9THgt1Pkqefsv88C8KKrQRX2gH_8m1GrMDTxefhp3TrU5A1JSHQpahIYPD33Mo-kOZPlL_z7JRF3nxIQ.webp?r=c08",
+      "netflixUrl": "https://www.netflix.com/title/81108061",
+      "netflixId": "81108061",
+      "viewed": false
+    },
+    {
+      "id": "mr026",
+      "title": "Je m'appelle Agneta",
+      "year": "2025",
+      "episodes": 6,
+      "duration": "~50 min",
+      "synopsis": "Thriller sueco sobre una periodista que investiga un caso de desaparición.",
+      "cast": [],
+      "genres": ["Thriller", "Nórdico"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/0Qzqdxw-HG1AiOKLWWPsFOUDA2E/AAAABU_XBSCnVLEIrJdW5SX3h9cUrhsNfL9lXTalTT9BCnj4rXtnRFKo79vAfyQbsIepC4-wEZF81zF1CYRpeLF3YK-3W7QFT2rBWp3rcVf8gCF7NumoLgxls_01cRyd3u0btXhAmpn-W6pm210w4TA3buYSudgfYPj-jn8qS3GaQIXvtw.webp?r=ca9",
+      "netflixUrl": "https://www.netflix.com/title/81735935",
+      "netflixId": "81735935",
+      "viewed": false
+    },
+    {
+      "id": "mr027",
+      "title": "Atando cabos",
+      "year": "2020",
+      "episodes": 6,
+      "duration": "~50 min",
+      "synopsis": "Thriller sueco basado en las novelas de Viveca Sten.",
+      "cast": [],
+      "genres": ["Thriller", "Nórdico"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABaxn815mWcD7E2mY5pH-9oaN5Yg5bx3RsKmjyvwBa9pMdp_MWiejjsWZ2HahsBQsBrtsCJqcgen766_ll23JVjiex7KF8eHDDOk.webp?r=e0b",
+      "netflixUrl": "https://www.netflix.com/title/60021795",
+      "netflixId": "60021795",
+      "viewed": false
+    },
+    {
+      "id": "mr028",
+      "title": "Regreso al pueblo",
+      "year": "2025",
+      "episodes": 6,
+      "duration": "~45 min",
+      "synopsis": "Cuatro amigos encuentran una fortuna abandonada que pone a prueba sus principios.",
+      "cast": [],
+      "genres": ["Thriller"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABee3hZ9LM9ce65ThcuOqmdD2QgNvnrkr4dnRxlsSuBMDgduRCpWXf2UvdGJmdeEiDESzoEWlW949wv2LwZ5Vgubo-Q1IMyUSFAs.webp?r=bdb",
+      "netflixUrl": "https://www.netflix.com/title/81672341",
+      "netflixId": "81672341",
+      "viewed": false
+    },
+    {
+      "id": "mr056",
+      "title": "No dejes rastro",
+      "year": "2020",
+      "episodes": 8,
+      "duration": "~50 min",
+      "synopsis": "Thriller sobre un hombre que desaparece misteriosamente.",
+      "cast": [],
+      "genres": ["Thriller"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABZfI0c_7-4XxFRRN3N0Qk_9G0OohhBHQZTb3OWFSBRcYFCGFdVV9xZWdUJ8xlp-8JhhChE991SphR9kn3bXajsxrsYmgFoRSnALX.webp?r=5a2",
+      "netflixUrl": "https://www.netflix.com/title/80240964",
+      "netflixId": "80240964",
+      "viewed": false
+    },
+    {
+      "id": "mr057",
+      "title": "Sombras del pasado",
+      "year": "2025",
+      "episodes": 6,
+      "duration": "~50 min",
+      "synopsis": "Thriller sobre secretos familiares.",
+      "cast": [],
+      "genres": ["Thriller", "Drama"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABZfI0c_7-4XxFRRN3N0Qk_9G0OohhBHQZTb3OWFSBRcYFCGFdVV9xZWdUJ8xlp-8JhhChE991SphR9kn3bXajsxrsYmgFoRSnALX.webp?r=5a2://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABZfI0c_7-4XxFRRN3N0Qk_9G0OohhBHQZTb3OWFSBRcYFCGFdVV9xZWdUJ8xlp-8JhhChE991SphR9kn3bXajsxrsYmgFoRSnALX.webp?r=5a2",
+      "netflixUrl": "https://www.netflix.com/title/81760222",
+      "netflixId": "81760222",
+      "viewed": false
+    },
+    {
+      "id": "mr058",
+      "title": "La bestia en mí",
+      "year": "2024",
+      "episodes": 6,
+      "duration": "~50 min",
+      "synopsis": "Thriller psicológico sobre la naturaleza humana.",
+      "cast": [],
+      "genres": ["Thriller"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABU92idhCwcxPxeXfucPOp6t8BuCoA1y0NdjEFF__Q_TmHPHKzMc33B6jgWHNR0vTqCJ1S9Q8TdsdPkZDX5RtQt_vGXOhZI1tKThL.webp?r=48c://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABaBUTe2QCZkDeR10Mewa0I6hh4rHhhVK3ckRhciNkW2ipDnVI8cg2vpmBiwfK8PSfU2SI2DH6GcSBSFd1dudzwdVEvzsr-nz9eh3.webp?r=bc7",
+      "netflixUrl": "https://www.netflix.com/title/81427733",
+      "netflixId": "81427733",
+      "viewed": false
+    },
+    {
+      "id": "mr059",
+      "title": "Los secretos que ocultamos",
+      "year": "2025",
+      "episodes": 6,
+      "duration": "~50 min",
+      "synopsis": "Drama sobre secretos familiares enterrados.",
+      "cast": [],
+      "genres": ["Drama", "Thriller"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABUfEReKEWSIlHOT6Dkse1HmU779VwrEskgaAGZmaVHDqmP-BfPdfD_r3bX6j7z3-bPV3WDT3YFXYwuYKCz7fAK6dmwr4w8S8m-sB.webp?r=675",
+      "netflixUrl": "https://www.netflix.com/title/81697668",
+      "netflixId": "81697668",
+      "viewed": false
+    },
+    {
+      "id": "mr060",
+      "title": "Su último deseo",
+      "year": "2022",
+      "episodes": 6,
+      "duration": "~50 min",
+      "synopsis": "Drama sobre decisiones vitales.",
+      "cast": [],
+      "genres": ["Drama"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABT1P7pa-SjWlSbHKI3KOVMz6VOTsq5a9LFVvo_qkUtDXfLzXXDfNXjYD0Pi9aeBLZSGErErwnYMkk3enXcZU5ZA_BgVhvUgYnPyI.webp?r=d08",
+      "netflixUrl": "https://www.netflix.com/title/80245076",
+      "netflixId": "80245076",
+      "viewed": false
+    },
+    {
+      "id": "mr061",
+      "title": "Una madre perfecta",
+      "year": "2022",
+      "episodes": 4,
+      "duration": "~50 min",
+      "synopsis": "Thriller sobre una madre que oculta secretos.",
+      "cast": [],
+      "genres": ["Thriller"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABftV4MmhVJ6gQQxsaMqqD4M_rOishQpN_lk3g0mRQcsH0LiCmbp1s-X0ZkIIR3ZpTuo2ji-cew6KP2OsLvkS5Vgdq2qVoGaz4__1.webp?r=1cc",
+      "netflixUrl": "https://www.netflix.com/title/81346339",
+      "netflixId": "81346339",
+      "viewed": false
+    },
+    {
+      "id": "mr062",
+      "title": "¿Sabes quién es?",
+      "year": "2022",
+      "episodes": 6,
+      "duration": "~50 min",
+      "synopsis": "Thriller sobre identidades ocultas.",
+      "cast": [],
+      "genres": ["Thriller"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABT1P7pa-SjWlSbHKI3KOVMz6VOTsq5a9LFVvo_qkUtDXfLzXXDfNXjYD0Pi9aeBLZSGErErwnYMkk3enXcZU5ZA_BgVhvUgYnPyI.webp?r=d08",
+      "netflixUrl": "https://www.netflix.com/title/81015514",
+      "netflixId": "81015514",
+      "viewed": false
+    },
+    {
+      "id": "mr063",
+      "title": "Safe",
+      "year": "2018",
+      "episodes": 8,
+      "duration": "~45 min",
+      "synopsis": "Michael C. Hall. Un padre busca a su hija desaparecida en una comunidad aparentemente segura.",
+      "cast": ["Michael C. Hall"],
+      "genres": ["Thriller"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABfzNxAp5qHWNu3mFy4d_h5lLgMGLmO7u5dOqzKh4AYz8rqCp8O0HuC7gH2WEhTF0nyMKz6pFh5OqHa0rV8aPVYNqWHvG.webp?r=1e7",
+      "netflixUrl": "https://www.netflix.com/title/80201500",
+      "netflixId": "80201500",
+      "viewed": true,
+      "viewedDate": "2026-02"
+    },
+    {
+      "id": "mr064",
+      "title": "Collateral",
+      "year": "2018",
+      "episodes": 4,
+      "duration": "~60 min",
+      "synopsis": "Carey Mulligan. Thriller policial sobre un asesinato en Londres.",
+      "cast": ["Carey Mulligan"],
+      "genres": ["Thriller", "Policial"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABd_CJwzVLF6D5dW9VqWgHlqToPqHgD9tNRjdRKBfWMGqGuJLz4q0H6vjzPqGwKt4bJZ3kj0tpVjTt3tS4rPijgKVylPCVZG.webp?r=3e5",
+      "netflixUrl": "https://www.netflix.com/title/80185171",
+      "netflixId": "80185171",
+      "viewed": true,
+      "viewedDate": "2025-03"
+    },
+    {
+      "id": "mr065",
+      "title": "Solo una mirada",
+      "year": "2024",
+      "episodes": 6,
+      "duration": "~50 min",
+      "synopsis": "Thriller sobre una testigo de un crimen.",
+      "cast": [],
+      "genres": ["Thriller"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABRAS_cA0ZbQGU852lDOe6gCqrLGE1UeDSSXfGkDLEV97FZu6YZz6ateG6axDuInapandUx39B6x5KlXWz4csq-xYiDFpej_ELKs7.webp?r=148",
+      "netflixUrl": "https://www.netflix.com/title/81664956",
+      "netflixId": "81664956",
+      "viewed": false
+    },
+    {
+      "id": "mr066",
+      "title": "¿De quién huimos, mamá?",
+      "year": "2023",
+      "episodes": 6,
+      "duration": "~50 min",
+      "synopsis": "Thriller sobre una madre y su hija en fuga.",
+      "cast": [],
+      "genres": ["Thriller", "Drama"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABRAS_cA0ZbQGU852lDOe6gCqrLGE1UeDSSXfGkDLEV97FZu6YZz6ateG6axDuInapandUx39B6x5KlXWz4csq-xYiDFpej_ELKs7.webp?r=148://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABRAS_cA0ZbQGU852lDOe6gCqrLGE1UeDSSXfGkDLEV97FZu6YZz6ateG6axDuInapandUx39B6x5KlXWz4csq-xYiDFpej_ELKs7.webp?r=148",
+      "netflixUrl": "https://www.netflix.com/title/81314936",
+      "netflixId": "81314936",
+      "viewed": false
+    },
+    {
+      "id": "mr067",
+      "title": "Una amistad, un asesinato",
+      "year": "2024",
+      "episodes": 4,
+      "duration": "~50 min",
+      "synopsis": "Thriller sobre una amistad rota por un crimen.",
+      "cast": [],
+      "genres": ["Thriller"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABdw5D5mDtBAmqCNKIyEgDDzB2qF2DwODgXTEu_ZqHk2YHuIMWtB-C0_yTeQPjzIjUeW77_HHNxW6ku0S9aQiMI670w2hVprBcdwJ.webp?r=572://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABdw5D5mDtBAmqCNKIyEgDDzB2qF2DwODgXTEu_ZqHk2YHuIMWtB-C0_yTeQPjzIjUeW77_HHNxW6ku0S9aQiMI670w2hVprBcdwJ.webp?r=572",
+      "netflixUrl": "https://www.netflix.com/title/81729040",
+      "netflixId": "81729040",
+      "viewed": false
+    },
+    {
+      "id": "mr068",
+      "title": "Entrevías",
+      "year": "2022",
+      "episodes": 8,
+      "duration": "~50 min",
+      "synopsis": "Thriller español sobre un viudo que investiga la muerte de su esposa.",
+      "cast": [],
+      "genres": ["Thriller", "Drama"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABYI4kxWCVPuof7NZDDSdodPw20KwvxKJiMzqk4l5ZVa6xHGyNzz6OydLATcYMvnKPpKFjTdL8ucvA8YmbIEOxbfss1KSHNjM3H0N.webp?r=fde://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABekq0GzCrLF6Pfw5hLFKKdQ5UG4kP5Gs8E8qD5NKjhz8g2HYh8P4CrD7Q0hN6xY8JZ3kG0T9pWqH8sV6x4rPj0W5LzKdV0n.webp?r=2a8",
+      "netflixUrl": "https://www.netflix.com/title/81478080",
+      "netflixId": "81478080",
+      "viewed": true,
+      "viewedDate": "2022-07"
+    },
+    {
+      "id": "mr071",
+      "title": "Obsesión",
+      "year": "2022",
+      "episodes": 4,
+      "duration": "~50 min",
+      "synopsis": "Thriller erótico sobre una relación peligrosa.",
+      "cast": [],
+      "genres": ["Thriller", "Drama"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABTkfU9AJBGv0iI_S03QRjI2KNBWdKq1sBMftKtkVVArEux-VO2PgEbGDE65_Lus9kL0NDAq4FtHzHxodNnt8l59Thysm9JmRDqlX.webp?r=760",
+      "netflixUrl": "https://www.netflix.com/title/81478642",
+      "netflixId": "81478642",
+      "viewed": false
+    },
+    {
+      "id": "mv001",
+      "title": "Anatomía de un escándalo",
+      "year": "2022",
+      "episodes": 6,
+      "duration": "~50 min",
+      "synopsis": "Un ministro británico es acusado de violación. Su esposa debe decidir si cree en su inocencia.",
+      "cast": ["Sienna Miller", "Rupert Friend", "Michelle Dockery"],
+      "genres": ["Thriller", "Judicial"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABTkfU9AJBGv0iI_S03QRjI2KNBWdKq1sBMftKtkVVArEux-VO2PgEbGDE65_Lus9kL0NDAq4FtHzHxodNnt8l59Thysm9JmRDqlX.webp?r=760://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABcoc5W0JveprtHQ5aGiHup97rrRhJP-mmW-L9csBiI3UetSsD50k2A_92509AL-mzDTGvYtHo9EVIrkGItdbZmR1f-zxqxRLHW219IPEfTDZItneLddr4YvGppSy5XbbCDCV8d1Dfn-dNXSGmgcV8fDqV75EL_3IOvquXsxQgYuxmg.webp?r=912",
+      "netflixUrl": "https://www.netflix.com/title/81152788",
+      "netflixId": "81152788",
+      "viewed": true,
+      "viewedDate": "2022-04"
+    },
+    {
+      "id": "mv002",
+      "title": "Antracita: El misterio de la secta",
+      "year": "2024",
+      "episodes": 6,
+      "duration": "~45 min",
+      "synopsis": "Una periodista investiga una secta en los Pirineos españoles tras un asesinato.",
+      "cast": [],
+      "genres": ["Thriller"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABWBH4QLJdZQJYYvnqEYASZDUkYoQKn2TYGmzJNujZ5EfuxIcizgh6aotJya3q_JwHMqfxqEo1mDsu6E8JRBXw4QV30-e5pAJjtc.webp?r=6e4",
+      "netflixUrl": "https://www.netflix.com/title/81520697",
+      "netflixId": "81520697",
+      "viewed": true,
+      "viewedDate": "2025-02"
+    },
+    {
+      "id": "mv003",
+      "title": "Arenas movedizas",
+      "year": "2025",
+      "episodes": 6,
+      "duration": "~50 min",
+      "synopsis": "Basada en el caso real del crimen de Maja en Dinamarca.",
+      "cast": [],
+      "genres": ["Thriller", "True Crime"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABawoDq9aKFQ2ItsI2-zeRKQ6VP585X-mPr2T3iakc1Ze4eVm1GXnfEtb7_sy4ELwa10Ltk3wkq7GH-3_7nB6Xp6AkMTahuMK4oE.webp?r=ba0",
+      "netflixUrl": "https://www.netflix.com/title/80211703",
+      "netflixId": "80211703",
+      "viewed": true,
+      "viewedDate": "2025-02"
+    },
+    {
+      "id": "mv004",
+      "title": "Así nos ven",
+      "year": "2019",
+      "episodes": 2,
+      "duration": "~90 min",
+      "synopsis": "Miniserie. Cinco décadas en la vida de una pareja negra en Estados Unidos.",
+      "cast": ["Wunmi Mosaku", "Malachi Kirby", "Dennis Dyack"],
+      "genres": ["Drama"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABYwg09zmZKWb8DqC5GPGcvuhQFOUF_FxsP_Sms8fWkdc_b6-q7dYblb0ElB6y3Z7DOMVrLnWZEkBsLuGoXETKGqd6MwVzrwc3NE.webp?r=47a",
+      "netflixUrl": "https://www.netflix.com/title/80200549",
+      "netflixId": "80200549",
+      "viewed": true,
+      "viewedDate": "2021-10"
+    },
+    {
+      "id": "mv005",
+      "title": "Clickbait",
+      "year": "2021",
+      "episodes": 8,
+      "duration": "~45 min",
+      "synopsis": "Un padre de familia aparece en un video viral secuestrado.",
+      "cast": ["Adrian Grenier", "Zoe Kazan", "Betty Gabriel"],
+      "genres": ["Thriller"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABX5hJiN895CpPRVbJdtQ_Qv-PKIXMe6dMfGRy8wOL0MfpQmV6Ge5ZearK0B1l1Mv1ECgw89gowiJfeWY4gOoqsn7MbSL2X6lMEw.webp?r=e6d",
+      "netflixUrl": "https://www.netflix.com/title/80991754",
+      "netflixId": "80991754",
+      "viewed": true,
+      "viewedDate": "2024-12"
+    },
+    {
+      "id": "mv006",
+      "title": "Creedme",
+      "year": "2021",
+      "episodes": 8,
+      "duration": "~45 min",
+      "synopsis": "Thriller sobre una profesora acusada de agresión sexual.",
+      "cast": [],
+      "genres": ["Thriller"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABdSaQ_ewBlklzRJGHbrLfZ0PwQr0GmLi9eSnTbTvm_SjBXV8z7MRuJs78QHtf8DagTmstmIleqctKXFpOiS0VhlA2VHjxC7cvCs.webp?r=2f2",
+      "netflixUrl": "https://www.netflix.com/title/80153467",
+      "netflixId": "80153467",
+      "viewed": true,
+      "viewedDate": "2021-11"
+    },
+    {
+      "id": "mv007",
+      "title": "Criminal: España",
+      "year": "2019",
+      "episodes": 4,
+      "duration": "~45 min",
+      "synopsis": "Serie de interrogatorios policíacos en un entorno claustrofóbico.",
+      "cast": ["Emma Suárez", "Jorge Bosch", "Carmen Maura"],
+      "genres": ["Thriller", "Policiaco"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABU2Asjfa9icrtltqwNuj6EAmEFNNV0Pp1Z3ajJckYsEVXM7yPUQHvpoFa3HoL2hVFqT-7yzeulm_rLhRaWhMbwI6AK-bfU_A2So.webp?r=aa4",
+      "netflixUrl": "https://www.netflix.com/title/81020523",
+      "netflixId": "81020523",
+      "viewed": true,
+      "viewedDate": "2025-06"
+    },
+    {
+      "id": "mv008",
+      "title": "Desde dentro",
+      "year": "2026",
+      "episodes": 4,
+      "duration": "~50 min",
+      "synopsis": "Miniserie. Una detective debe enfrentarse a sus propios demonios.",
+      "cast": [],
+      "genres": ["Thriller"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABeUKMw5yRi_ld-iXLC0NNjyIxywxhMe4kO1K5CmC1LF9qDXvKWva3BvlJCuYgcUQCq9V0QxDF4YxfXnl5ispJBxXKFZww6eWceE.webp?r=dd6",
+      "netflixUrl": "https://www.netflix.com/title/81332052",
+      "netflixId": "81332052",
+      "viewed": true,
+      "viewedDate": "2026-03"
+    },
+    {
+      "id": "mv009",
+      "title": "Dualidad",
+      "year": "2022",
+      "episodes": 7,
+      "duration": "~45 min",
+      "synopsis": "Un hombre busca a su esposa desaparecida y descubre una conspiración.",
+      "cast": [],
+      "genres": ["Thriller"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABfPhipWEG5-EBlvawjGjIpXmnTazEqpmlgiaEyqr_662m2h-H7llMqGaioaFV43uQh1YbEFKb6zW1KO66O__jUBLrHR1Z7Sx4YE.webp?r=76d",
+      "netflixUrl": "https://www.netflix.com/title/81045829",
+      "netflixId": "81045829",
+      "viewed": true,
+      "viewedDate": "2022-09"
+    },
+    {
+      "id": "mv010",
+      "title": "El cuerpo en llamas",
+      "year": "2023",
+      "episodes": 8,
+      "duration": "~50 min",
+      "synopsis": "Basada en el crimen real de la Guardia Urbana de Barcelona.",
+      "cast": [],
+      "genres": ["Thriller", "True Crime"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABbKt9fksWLVABExAHm4IgbLAwkWKqNoM2c3Ni_f8TV9uKGuZNbhOmffAZeb32Zg4ppBKo-tDTmUsqEpGnD6V51hJhZUewRv9Qjk.webp?r=835",
+      "netflixUrl": "https://www.netflix.com/title/81306170",
+      "netflixId": "81306170",
+      "viewed": true,
+      "viewedDate": "2023-10"
+    },
+    {
+      "id": "mv011",
+      "title": "El jardinero",
+      "year": "2025",
+      "episodes": 6,
+      "duration": "~45 min",
+      "synopsis": "Un jardinero convertido en testigo clave de una investigación criminal.",
+      "cast": [],
+      "genres": ["Thriller"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABXVdTuYMNG9kozb6rNuG2l7jKG7upi1j7-7ZzAKbuPFjOyK4ARU4nKX5bzKtFn7SuAiXcGnx8yg9EtzuBuy_13hpnRkTMngL864.webp?r=82b",
+      "netflixUrl": "https://www.netflix.com/title/81702548",
+      "netflixId": "81702548",
+      "viewed": true,
+      "viewedDate": "2025-04"
+    },
+    {
+      "id": "mv012",
+      "title": "Él y ella",
+      "year": "2025",
+      "episodes": 6,
+      "duration": "~30 min",
+      "synopsis": "Romance español sobre dos personas que se conocen en circunstancias inesperadas.",
+      "cast": [],
+      "genres": ["Romance"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABUFKEs7So5k2Z8iEyIUUe9bVS7icYLmx0CwupuDOuMwbzI1id4p6ht8fax6qYrLqRokpPhmPSYLt4tYn6bKRSlZFpa4eHINjCxg.webp?r=bf1",
+      "netflixUrl": "https://www.netflix.com/title/81662954",
+      "netflixId": "81662954",
+      "viewed": true,
+      "viewedDate": "2026-01"
+    },
+    {
+      "id": "mv013",
+      "title": "Engaños",
+      "year": "2024",
+      "episodes": 8,
+      "duration": "~45 min",
+      "synopsis": "Thriller sobre secretos familiares y traiciones.",
+      "cast": [],
+      "genres": ["Thriller"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABXCRr1jvvBlQv1iwmq-dzvshHASo9SZfjWKI_sQMV0OAMlftPp4TZwZnsmzBaaA0C2eG47wQLTSQD_4sDOwM7g6C18UGDnmN9G0.webp?r=78a",
+      "netflixUrl": "https://www.netflix.com/title/81588093",
+      "netflixId": "81588093",
+      "viewed": true,
+      "viewedDate": "2024-02"
+    },
+    {
+      "id": "mv014",
+      "title": "Esa noche",
+      "year": "2026",
+      "episodes": 6,
+      "duration": "~50 min",
+      "synopsis": "Las hermanas Arbizu de Pamplona no se parecen en nada, pero todas saben dónde enterraron aquel cuerpo.",
+      "cast": [],
+      "genres": ["Thriller", "Drama"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABZnS4hVh-cRvF7itVOYQYlJqp1YCgUVPxR4aLTAAOo8e_lwVrT0PUySt-a8zsUpN0w-u5SPEeU-RP01DjX44QiZzVoUCI0l9dEs.webp?r=9f0",
+      "netflixUrl": "https://www.netflix.com/title/81613228",
+      "netflixId": "81613228",
+      "viewed": true,
+      "viewedDate": "2026-03"
+    },
+    {
+      "id": "mv015",
+      "title": "Forst",
+      "year": "2024",
+      "episodes": 6,
+      "duration": "~50 min",
+      "synopsis": "Thriller polaco sobre un detective que persigue a un asesino en serie.",
+      "cast": [],
+      "genres": ["Thriller"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABZbvyAGqNU0z2jktuz4nCSwrQwkhrOtemg6-U4EauMj5PaF7gJqONqjvBxE2U4LdlYOhyiOVUeeEOz1PRhEG_K_Q-kpD43P1aXQ.webp?r=2cd",
+      "netflixUrl": "https://www.netflix.com/title/81488784",
+      "netflixId": "81488784",
+      "viewed": true,
+      "viewedDate": "2025-02"
+    },
+    {
+      "id": "mv016",
+      "title": "Freud",
+      "year": "2020",
+      "episodes": 8,
+      "duration": "~50 min",
+      "synopsis": "Versión ficticia del joven Sigmund Freud resolviendo crímenes en la Viena de 1890.",
+      "cast": ["Robert Finster"],
+      "genres": ["Thriller", "Histórico"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABZQmo1nVbXUNfSx8vgDlsLpysXas4OJRVbnO54edtN7Wn6msUroZTTGhIn48zzC96-DrSUBMKp5_AEBBdBT1jIhUViB77Jubkmw.webp?r=989",
+      "netflixUrl": "https://www.netflix.com/title/80209184",
+      "netflixId": "80209184",
+      "viewed": true,
+      "viewedDate": "2020-03"
+    },
+    {
+      "id": "mv017",
+      "title": "La cúpula de cristal",
+      "year": "2025",
+      "episodes": 6,
+      "duration": "~50 min",
+      "synopsis": "Thriller español sobre una periodista que investiga una secta.",
+      "cast": [],
+      "genres": ["Thriller"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABZKbCz-5KlxzZPCRwxjz7URvlTRsX8Zo05j7nA8ncSBH1QtgD9v4rjw3sBi5Zistf-oNNiQWPvRh2RzDLDz3TCRo-c5vxjW0JyY.webp?r=6c1",
+      "netflixUrl": "https://www.netflix.com/title/81622643",
+      "netflixId": "81622643",
+      "viewed": true,
+      "viewedDate": "2025-04"
+    },
+    {
+      "id": "mv018",
+      "title": "La directora",
+      "year": "2021",
+      "episodes": 6,
+      "duration": "~45 min",
+      "synopsis": "Comedia española sobre una profesora que se convierte en directora de instituto.",
+      "cast": [],
+      "genres": ["Comedia"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABdR2Y8Q3kjBWBxuq4ZbYmZNOzB0CknX9t0wquedxII-x9XW_-AxNyw8zqtKRKu85LUlu1gsHN0gQXBEbrn0Y-ft05S3PWbp7HIU.webp?r=01c",
+      "netflixUrl": "https://www.netflix.com/title/81206259",
+      "netflixId": "81206259",
+      "viewed": true,
+      "viewedDate": "2021-08"
+    },
+    {
+      "id": "mv019",
+      "title": "La señal",
+      "year": "2024",
+      "episodes": 4,
+      "duration": "~50 min",
+      "synopsis": "Thriller sobre la desaparición de una mujer y las señales que dejó.",
+      "cast": [],
+      "genres": ["Thriller"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABWQ9I0e9OmlrGGhSROGR4aHlOKBxI3kjcO2lRstGfYIC2zhJNCHg9QPSqCj8yWssMxMQvZoTRo16w8dAFdAGxJ--7_WtxrC6bC8.webp?r=176",
+      "netflixUrl": "https://www.netflix.com/title/81441399",
+      "netflixId": "81441399",
+      "viewed": true,
+      "viewedDate": "2024-05"
+    },
+    {
+      "id": "mv020",
+      "title": "Mentiras",
+      "year": "2022",
+      "episodes": 6,
+      "duration": "~45 min",
+      "synopsis": "Drama sobre las mentiras que construyen y destruyen relaciones.",
+      "cast": [],
+      "genres": ["Drama"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABftIWSNim1QcH12ghlAoVRq4dzFkwHY53o91iNfQDs61H-9kff5KxlRUGXg16rJzAyUJ9T6eIMjsD1sVKgRFnn5lk1aD4ux4oPI.webp?r=c08",
+      "netflixUrl": "https://www.netflix.com/title/81346087",
+      "netflixId": "81346087",
+      "viewed": true,
+      "viewedDate": "2022-03"
+    },
+    {
+      "id": "mv021",
+      "title": "Mi dulce niña",
+      "year": "2024",
+      "episodes": 6,
+      "duration": "~50 min",
+      "synopsis": "Thriller sobre una madre que busca a su hija desaparecida.",
+      "cast": [],
+      "genres": ["Thriller"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABfCkUDu4RlOCvl3m41ntzlhQnwuywrp8QXwFU8P1hRmOklqPzaE3oxCPmcLGjlrJKJ63dluE3793wuW2Luwul310sKkmvLxni1g.webp?r=8cb",
+      "netflixUrl": "https://www.netflix.com/title/81513233",
+      "netflixId": "81513233",
+      "viewed": true,
+      "viewedDate": "2024-06"
+    },
+    {
+      "id": "mv022",
+      "title": "No hables con extraños",
+      "year": "2022",
+      "episodes": 8,
+      "duration": "~45 min",
+      "synopsis": "Thriller sobre una mujer que recibe amenazas de un desconocido.",
+      "cast": [],
+      "genres": ["Thriller"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABaxrE2YCBLIzz8km5vlNeb-MXAs058CtO5wqQ18g8Qvco5iElzB04mB4IXMCLY6K1PuPZfGXEc8pupKDkGanpjxH9lKhGIbTY8U.webp?r=bae",
+      "netflixUrl": "https://www.netflix.com/title/81001209",
+      "netflixId": "81001209",
+      "viewed": true,
+      "viewedDate": "2022-01"
+    },
+    {
+      "id": "mv023",
+      "title": "Orgullo y prejuicio",
+      "year": "1995",
+      "episodes": 6,
+      "duration": "~55 min",
+      "synopsis": "Adaptación clásica de la novela de Jane Austen.",
+      "cast": ["Jennifer Ehle", "Colin Firth"],
+      "genres": ["Romance", "Clásico"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABTe1OaLCxQ9FiSv25FV-MvVUnqk-PLjkUIfSGWD8my28pbrNiSUIAyvMYmoJ-8djZEuoVTLoh3KvDRPS72Boqg7YC2EpMHgtgyc.webp?r=529",
+      "netflixUrl": "https://www.netflix.com/title/81737965",
+      "netflixId": "81737965",
+      "viewed": true,
+      "viewedDate": "2025-06"
+    },
+    {
+      "id": "mv024",
+      "title": "Palacio de Invierno",
+      "year": "2025",
+      "episodes": 8,
+      "duration": "~50 min",
+      "synopsis": "Drama histórico ambientado en la Rusia zarista.",
+      "cast": [],
+      "genres": ["Drama", "Histórico"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABcnbD9M_NVjSgb-4VWwGcLiEcodrMC-a61hn7fL1JD7RZ3A-2LkA3tCMKMNvtOcxGLVdwFcYhE5vY_dxYiR0EKuHgwHGM_AdfQA.webp?r=77e",
+      "netflixUrl": "https://www.netflix.com/title/81625053",
+      "netflixId": "81625053",
+      "viewed": true,
+      "viewedDate": "2025-03"
+    },
+    {
+      "id": "mv025",
+      "title": "Quédate a mi lado",
+      "year": "2022",
+      "episodes": 8,
+      "duration": "~45 min",
+      "synopsis": "Drama sobre una amistad que enfrenta el cáncer.",
+      "cast": [],
+      "genres": ["Drama"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABQpxNw5okZnAAXaZRug7rRtV4O0fWL2q-Rlj-oHvLW0Vq2MrAgdeCeLGRCQIdetP3ZONReYnV4B4q9Eh7VXPvRx9qapenl0Kpek.webp?r=b8f",
+      "netflixUrl": "https://www.netflix.com/title/81289581",
+      "netflixId": "81289581",
+      "viewed": true,
+      "viewedDate": "2022-01"
+    },
+    {
+      "id": "mv026",
+      "title": "Te echo de menos",
+      "year": "2025",
+      "episodes": 5,
+      "duration": "~50 min",
+      "synopsis": "Romance sobre el desamor y la reconciliación.",
+      "cast": [],
+      "genres": ["Romance"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABXoOc4YwCMSksLBvCm9n-ca3PDu1M7kmz2fYqU2D1CSzHdjPVyvg_LiOIQ0LknPZq6Sttx0QahFd_INxau59PvzCvqFaKzJqSfw.webp?r=e38",
+      "netflixUrl": "https://www.netflix.com/title/81258639",
+      "netflixId": "81258639",
+      "viewed": true,
+      "viewedDate": "2025-12"
+    },
+    {
+      "id": "mv027",
+      "title": "Traición",
+      "year": "2025",
+      "episodes": 5,
+      "duration": "~50 min",
+      "synopsis": "Thriller sobre las traiciones dentro de una familia.",
+      "cast": [],
+      "genres": ["Thriller"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABW66A9s_10H63qOX2VaNjMGF5CF5BIT0JxuNRWb_NM0EHwQiGjLnQh2DpQzk_vsbEsobtLxP3wYquj67V0i_FGKFVV_4rICMHho.webp?r=7ef",
+      "netflixUrl": "https://www.netflix.com/title/81417796",
+      "netflixId": "81417796",
+      "viewed": true,
+      "viewedDate": "2025-03"
+    },
+    {
+      "id": "mv028",
+      "title": "Una familia normal",
+      "year": "2024",
+      "episodes": 3,
+      "duration": "~50 min",
+      "synopsis": "Drama noruego sobre los secretos de una familia aparentemente perfecta.",
+      "cast": [],
+      "genres": ["Drama", "Thriller"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABeESKK0BP3Zle1S-3mNZdKSOBE-rVc8L1ab7SIJiXcWSBek_zre5PduLT6sDgcYlh1KtAaFwamd1-fNLOeyycSlNLxj9507Phss.webp?r=dec",
+      "netflixUrl": "https://www.netflix.com/title/81392163",
+      "netflixId": "81392163",
+      "viewed": true,
+      "viewedDate": "2024-02"
+    },
+    {
+      "id": "mv029",
+      "title": "Unorthodox",
+      "year": "2020",
+      "episodes": 4,
+      "duration": "~50 min",
+      "synopsis": "Una joven judía huye de su matrimonio arreglado en Brooklyn a Berlín.",
+      "cast": ["Shira Haas"],
+      "genres": ["Drama"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABawoDq9aKFQ2ItsI2-zeRKQ6VP585X-mPr2T3iakc1Ze4eVm1GXnfEtb7_sy4ELwa10Ltk3wkq7GH-3_7nB6Xp6AkMTahuMK4oE.webp?r=ba0",
+      "netflixUrl": "https://www.netflix.com/title/81019069",
+      "netflixId": "81019069",
+      "viewed": true,
+      "viewedDate": "2020-04"
+    },
+    {
+      "id": "mv030",
+      "title": "Vigilante",
+      "year": "2024",
+      "episodes": 8,
+      "duration": "~50 min",
+      "synopsis": "Thriller coreano sobre una mujer que busca venganza.",
+      "cast": [],
+      "genres": ["Thriller", "K-Drama"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABU6MafQPdV960UBcYuaz_oyU79J561FSoGsvSd-60igso40BEravduDmhela10mFm05GuiM_yYMnByB30MNELcFDC8MhfQ8xn0Q7jgwKypsKvEkUQia2m8TehjYqFWX09xcBjRmTV5qmcBE3R0PicibvcGqquB95hoMT-jC0aB-9iclyiKOLMKS6ex1fGgXsVhKOZVPEuU0bfjc2QuNnPlyUHfM-gZ1ZT2Tv--c5.webp?r=ae0",
+      "netflixUrl": "https://www.netflix.com/title/81380441",
+      "netflixId": "81380441",
+      "viewed": true,
+      "viewedDate": "2024-06"
+    },
+    {
+      "id": "mv031",
+      "title": "Clanes",
+      "year": "2024",
+      "episodes": 7,
+      "duration": "~50 min",
+      "synopsis": "Thriller español sobre una abogada que investiga a su padre y se enamora de un narco.",
+      "cast": ["Clara Lago", "Tamar Novas"],
+      "genres": ["Thriller"],
+      "poster": "https://occ-0-6168-360.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABcVKlChNfwvYUoCEllYJ3shg3IHcB9eY_1kcmSF9Xox-11q6lNdQ2HYUMregq_-055JMnvxMsUCsgxr23q2X1J8y-NGLZo_WoaE.webp?r=541",
+      "netflixUrl": "https://www.netflix.com/title/81563540",
+      "netflixId": "81563540",
+      "viewed": true,
+      "viewedDate": "2024-06"
+    }
+  ]
+};
 
-        function loadSeries() {
-            if (typeof SERIES_DATA !== 'undefined') {
-                allSeries = SERIES_DATA.series;
-                console.log('Miniseries cargadas:', SERIES_DATA.lastUpdate, '- Total:', allSeries.length);
-            } else {
-                console.log('Error: SERIES_DATA no disponible');
-                document.getElementById('content').innerHTML = '<div class="empty-msg">Error al cargar el catálogo</div>';
-                return;
+
+    let allSeries = [];
+    let currentSection = 'pendientes';
+    let selectedSeries = null;
+    let viewedSeries = JSON.parse(localStorage.getItem('viewedSeries') || '[]');
+
+    const CATEGORY_ORDER = [
+        'Thriller', 'Drama', 'True Crime', 'Documental', 
+        'Romance', 'Histórico', 'Nórdico', 'Judicial', 
+        'Biográfico', 'Acción', 'Fantasía', 'Comedia', 'Otros'
+    ];
+
+    function loadSeries() {
+        allSeries = SERIES_DATA.series;
+        allSeries.forEach(s => {
+            if (s.viewed && !viewedSeries.includes(s.id)) {
+                viewedSeries.push(s.id);
             }
-            
-            // Sincronizar vistas del JSON con localStorage
-            allSeries.forEach(s => {
-                if (s.viewed && !viewedSeries.includes(s.id)) {
-                    viewedSeries.push(s.id);
-                }
-            });
-            localStorage.setItem('viewedSeries', JSON.stringify(viewedSeries));
-            
-            updateStats();
-            renderContent();
+        });
+        localStorage.setItem('viewedSeries', JSON.stringify(viewedSeries));
+        updateStats();
+        renderContent();
+    }
+
+    function updateStats() {
+        const notViewed = allSeries.filter(s => !viewedSeries.includes(s.id) && !s.genres?.includes('Skipped')).length;
+        const viewed = allSeries.filter(s => viewedSeries.includes(s.id)).length;
+        document.getElementById('stats').innerHTML = 
+            `📊 <span>${notViewed}</span> pendientes · <span>${viewed}</span> vistas`;
+    }
+
+    function showSection(section) {
+        currentSection = section;
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('btn' + section.charAt(0).toUpperCase() + section.slice(1)).classList.add('active');
+        closeDetail();
+        renderContent();
+    }
+
+    function getMainGenre(genres) {
+        if (!genres || genres.length === 0) return 'Otros';
+        const realGenres = genres.filter(g => g !== 'Skipped');
+        return realGenres[0] || 'Otros';
+    }
+
+    function groupByCategory(series) {
+        const categories = {};
+        series.forEach(s => {
+            const genre = getMainGenre(s.genres);
+            if (!categories[genre]) categories[genre] = [];
+            categories[genre].push(s);
+        });
+        return categories;
+    }
+
+    function renderContent() {
+        let seriesToShow = [];
+        
+        if (currentSection === 'pendientes') {
+            seriesToShow = allSeries.filter(s => !viewedSeries.includes(s.id) && !s.genres?.includes('Skipped'));
+        } else if (currentSection === 'vistas') {
+            seriesToShow = allSeries.filter(s => viewedSeries.includes(s.id) || s.genres?.includes('Skipped'));
+        } else {
+            seriesToShow = allSeries;
         }
 
-        function updateStats() {
-            const notViewed = allSeries.filter(s => !viewedSeries.includes(s.id) && !s.genres?.includes('Skipped')).length;
-            const viewed = allSeries.filter(s => viewedSeries.includes(s.id)).length;
-            document.getElementById('stats').innerHTML = 
-                `📊 <span>${notViewed}</span> pendientes · <span>${viewed}</span> vistas`;
+        if (seriesToShow.length === 0) {
+            document.getElementById('content').innerHTML = `<div class="empty-msg">No hay series en esta sección</div>`;
+            return;
         }
 
-        function showSection(section) {
-            currentSection = section;
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById('btn' + section.charAt(0).toUpperCase() + section.slice(1)).classList.add('active');
-            closeDetail();
-            renderContent();
-        }
-
-        function renderContent() {
-            let seriesToShow = [];
-            let title = '';
-            
-            if (currentSection === 'pendientes') {
-                seriesToShow = allSeries.filter(s => !viewedSeries.includes(s.id) && !s.genres?.includes('Skipped'));
-                title = 'Miniseries pendientes';
-            } else if (currentSection === 'vistas') {
-                seriesToShow = allSeries.filter(s => viewedSeries.includes(s.id) || s.genres?.includes('Skipped'));
-                title = 'Miniseries vistas';
-            } else {
-                seriesToShow = allSeries;
-                title = 'Todas las miniseries';
+        const categories = groupByCategory(seriesToShow);
+        let html = '';
+        
+        CATEGORY_ORDER.forEach(cat => {
+            if (categories[cat] && categories[cat].length > 0) {
+                html += renderCategory(cat, categories[cat]);
             }
-
-            if (seriesToShow.length === 0) {
-                document.getElementById('content').innerHTML = `<div class="empty-msg">No hay series en esta sección</div>`;
-                return;
+        });
+        
+        Object.keys(categories).forEach(cat => {
+            if (!CATEGORY_ORDER.includes(cat) && categories[cat].length > 0) {
+                html += renderCategory(cat, categories[cat]);
             }
-
-            let html = `<div class="category"><h2 class="category-title">${title} (${seriesToShow.length})</h2><div class="cards-grid">`;
-            
-            seriesToShow.forEach(series => {
-                const isViewed = viewedSeries.includes(series.id);
-                const poster = series.poster || 'https://via.placeholder.com/300x450/1a1a1a/666?text=' + encodeURIComponent(series.title);
-                html += `
-                    <div class="card" onclick="showDetail('${series.id}')">
-                        ${isViewed ? '<div class="card-viewed">VISTA</div>' : ''}
-                        <img class="card-poster" src="${poster}" alt="${series.title}" onerror="this.src='https://via.placeholder.com/300x450/1a1a1a/666?text=${encodeURIComponent(series.title)}'">
-                        <div class="card-info">
-                            <div class="card-title">${series.title}</div>
-                            <div class="card-meta">${series.year} · ${series.episodes} eps</div>
-                        </div>
-                    </div>
-                `;
-            });
-            
-            html += '</div></div>';
-            document.getElementById('content').innerHTML = html;
-        }
-
-        function showDetail(id) {
-            const series = allSeries.find(s => s.id === id);
-            if (!series) return;
-            
-            selectedSeries = series;
-            const isViewed = viewedSeries.includes(series.id);
-            
-            document.getElementById('detailTitle').textContent = series.title;
-            document.getElementById('detailMeta').textContent = `${series.year} · ${series.episodes} episodios · ${series.duration || ''}`;
-            document.getElementById('detailSynopsis').textContent = series.synopsis || 'Sin sinopsis disponible.';
-            
-            const cast = series.cast || [];
-            document.getElementById('detailCast').textContent = cast.length > 0 ? 'Reparto: ' + cast.join(', ') : '';
-            
-            const genres = series.genres || [];
-            document.getElementById('detailGenres').innerHTML = genres.map(g => 
-                `<span class="genre-tag">${g}</span>`
-            ).join('');
-            
-            const poster = series.poster || 'https://via.placeholder.com/280x420/1a1a1a/666?text=' + encodeURIComponent(series.title);
-            document.getElementById('detailPoster').src = poster;
-            
-            const btn = document.getElementById('markViewedBtn');
-            if (isViewed) {
-                btn.textContent = '✗ Desmarcar como vista';
-                btn.classList.add('viewed');
-            } else {
-                btn.textContent = '✓ Marcar como vista';
-                btn.classList.remove('viewed');
-            }
-            
-            const netflixUrl = series.netflixUrl || '#';
-            document.getElementById('netflixBtn').href = netflixUrl;
-            document.getElementById('netflixBtn').style.display = netflixUrl !== '#' ? 'inline-block' : 'none';
-            
-            document.getElementById('detailPanel').classList.add('active');
-        }
-
-        function closeDetail() {
-            document.getElementById('detailPanel').classList.remove('active');
-            selectedSeries = null;
-        }
-
-        function toggleViewed() {
-            if (!selectedSeries) return;
-            
-            const id = selectedSeries.id;
-            const idx = viewedSeries.indexOf(id);
-            
-            if (idx >= 0) {
-                viewedSeries.splice(idx, 1);
-            } else {
-                viewedSeries.push(id);
-            }
-            
-            localStorage.setItem('viewedSeries', JSON.stringify(viewedSeries));
-            updateStats();
-            renderContent();
-            showDetail(id);
-        }
-
-        // Cerrar panel con Escape
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') closeDetail();
         });
 
-        // Iniciar
-        loadSeries();
+        document.getElementById('content').innerHTML = html;
+    }
+
+    function renderCategory(name, series) {
+        let html = `<div class="category"><h2 class="category-title">${name} (${series.length})</h2><div class="cards-grid">`;
+        
+        series.forEach(s => {
+            const isViewed = viewedSeries.includes(s.id);
+            const isSkipped = s.genres?.includes('Skipped');
+            const poster = s.poster || 'https://via.placeholder.com/300x450/1a1a1a/666?text=' + encodeURIComponent(s.title);
+            
+            html += `
+                <div class="card" onclick="showDetail('${s.id}')">
+                    ${isViewed && !isSkipped ? '<span class="card-badge">✓</span>' : ''}
+                    ${isSkipped ? '<span class="card-badge skipped">SKIP</span>' : ''}
+                    <img src="${poster}" alt="${s.title}" onerror="this.src='https://via.placeholder.com/300x450/1a1a1a/666?text=${encodeURIComponent(s.title)}'">
+                    <div class="card-title">${s.title}</div>
+                </div>
+            `;
+        });
+        
+        html += '</div></div>';
+        return html;
+    }
+
+    function showDetail(id) {
+        const series = allSeries.find(s => s.id === id);
+        if (!series) return;
+        
+        selectedSeries = series;
+        const isViewed = viewedSeries.includes(series.id);
+        
+        document.getElementById('detailTitle').textContent = series.title;
+        document.getElementById('detailMeta').textContent = `${series.year} · ${series.episodes} episodios · ${series.duration || ''}`;
+        document.getElementById('detailSynopsis').textContent = series.synopsis || 'Sin sinopsis disponible.';
+        
+        const cast = series.cast || [];
+        document.getElementById('detailCast').textContent = cast.length > 0 ? 'Reparto: ' + cast.join(', ') : '';
+        
+        const genres = series.genres || [];
+        document.getElementById('detailGenres').innerHTML = genres.map(g => 
+            `<span class="genre-tag">${g}</span>`
+        ).join('');
+        
+        const poster = series.poster || 'https://via.placeholder.com/280x420/1a1a1a/666?text=' + encodeURIComponent(series.title);
+        document.getElementById('detailPoster').src = poster;
+        
+        const btn = document.getElementById('markViewedBtn');
+        if (isViewed) {
+            btn.textContent = '✗ Desmarcar como vista';
+            btn.classList.add('viewed');
+        } else {
+            btn.textContent = '✓ Marcar como vista';
+            btn.classList.remove('viewed');
+        }
+        
+        const netflixUrl = series.netflixUrl || '#';
+        document.getElementById('netflixBtn').href = netflixUrl;
+        document.getElementById('netflixBtn').style.display = netflixUrl !== '#' ? 'inline-block' : 'none';
+        
+        document.getElementById('detailPanel').classList.add('active');
+    }
+
+    function closeDetail() {
+        document.getElementById('detailPanel').classList.remove('active');
+        selectedSeries = null;
+    }
+
+    function toggleViewed() {
+        if (!selectedSeries) return;
+        
+        const id = selectedSeries.id;
+        const idx = viewedSeries.indexOf(id);
+        
+        if (idx >= 0) {
+            viewedSeries.splice(idx, 1);
+        } else {
+            viewedSeries.push(id);
+        }
+        
+        localStorage.setItem('viewedSeries', JSON.stringify(viewedSeries));
+        updateStats();
+        renderContent();
+        showDetail(id);
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeDetail();
+    });
+
+    loadSeries();
     </script>
 </body>
 </html>
